@@ -1,5 +1,53 @@
-const app = require("./app");
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const connectDB = require("./config/db");
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// Import rate limiting middleware for scalability
+const {
+  publicLimiter,
+  authLimiter,
+  userLimiter,
+  clickLimiter,
+  stopCleanup
+} = require("./middleware/rateLimiter");
+
+const authRoutes = require("./routes/authRoutes");
+const linkRoutes = require("./routes/linkRoutes");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+connectDB();
+
+// Apply rate limiting middleware
+// Auth endpoints (login, signup) - strict limits to prevent brute force
+app.use("/auth", authLimiter);
+
+// Public endpoints - moderate limits
+app.use("/public", publicLimiter);
+
+// Click tracking - high limits for tracking
+app.use("/click", clickLimiter);
+
+// User API endpoints - moderate limits
+app.use("/analytics", userLimiter);
+
+app.use(authRoutes);
+app.use(linkRoutes);
+
+const server = app.listen(process.env.PORT, () =>
+  console.log("Server running on port " + process.env.PORT)
+);
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received, shutting down gracefully...");
+  stopCleanup();
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
+  });
 });
+
