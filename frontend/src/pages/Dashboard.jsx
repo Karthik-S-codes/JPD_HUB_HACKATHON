@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const PUBLIC_BASE = (import.meta.env.VITE_PUBLIC_BASE_URL || "https://jpd-hub-hackathon.vercel.app");
   const [links, setLinks] = useState([]);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -348,7 +349,7 @@ export default function Dashboard() {
                 <div className="bg-slate-900 p-4 rounded-lg">
                   <p className="text-gray-400 text-sm mb-2">Your Public Link:</p>
                   <p className="text-emerald-400 text-sm break-all">
-                    http://localhost:5173/public/{userId}
+                    {`${PUBLIC_BASE}/public/${userId}`}
                   </p>
                 </div>
               </div>
@@ -469,12 +470,12 @@ export default function Dashboard() {
           <div className="flex gap-2">
             <input
               type="text"
-              value={`http://localhost:5173/public/${userId}`}
+              value={`${PUBLIC_BASE}/public/${userId}`}
               readOnly
               className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 text-sm"
             />
             <button
-              onClick={() => copyToClipboard(`http://localhost:5173/public/${userId}`)}
+              onClick={() => copyToClipboard(`${PUBLIC_BASE}/public/${userId}`)}
               className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all"
             >
               Copy

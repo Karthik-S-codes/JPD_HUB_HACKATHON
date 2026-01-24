@@ -21,25 +21,18 @@ const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 // ---- CORS setup (single, robust) ----
-const normalize = (url) => (url ? url.replace(/\/+$/, "") : url);
-
-const allowedOrigins = new Set([
-  normalize(process.env.FRONTEND_URL || "https://jpd-hub-hackathon.vercel.app"),
-  "http://localhost:5173",
-  "http://localhost:3000"
-]);
-const vercelPreviewRegex = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/;
-
 const corsOptions = {
-  origin: (origin, callback) => callback(null, true),
+  origin: [
+    "https://jpd-hub-hackathon.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000"
+  ],
   credentials: true,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // ensure preflight succeeds
 
 app.use(express.json());
 
