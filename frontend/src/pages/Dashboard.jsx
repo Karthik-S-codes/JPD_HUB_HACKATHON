@@ -231,27 +231,27 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-black to-black p-3 sm:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-emerald-400">Link Hub Dashboard</h1>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-emerald-400">Link Hub Dashboard</h1>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             <button
               onClick={() => setShowThemeSettings(!showThemeSettings)}
-              className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold transition-all"
+              className="flex-1 sm:flex-none bg-slate-700 hover:bg-slate-600 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all text-sm sm:text-base"
             >
               🎨 Theme
             </button>
             <button
               onClick={() => navigate("/analytics")}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold transition-all"
+              className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all text-sm sm:text-base"
             >
               📊 Analytics
             </button>
             <button
               onClick={logout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-all"
+              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all text-sm sm:text-base"
             >
               Logout
             </button>
@@ -261,7 +261,7 @@ export default function Dashboard() {
         {/* Theme Settings Modal */}
         {showThemeSettings && (
           <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-emerald-500 border-opacity-30 shadow-2xl">
+        <div className="bg-gray-900 rounded-2xl p-8 max-w-md w-full border border-emerald-500 border-opacity-30 shadow-2xl">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-emerald-400">Theme Settings</h3>
                 <button
@@ -320,7 +320,7 @@ export default function Dashboard() {
                       type="text"
                       value={accentColor}
                       onChange={(e) => setAccentColor(e.target.value)}
-                      className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white"
+                      className="flex-1 px-4 py-3 bg-gray-950 border border-gray-700 rounded-lg text-white"
                       placeholder="#00ff00"
                     />
                     <button
@@ -465,19 +465,19 @@ export default function Dashboard() {
         </div>
 
         {/* Public Link Section */}
-        <div className="bg-slate-800 bg-opacity-40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-20 mb-8">
-          <h2 className="text-2xl font-bold text-emerald-400 mb-4">Your Public Profile</h2>
-          <p className="text-gray-400 mb-3">Share this link with others:</p>
-          <div className="flex gap-2">
+        <div className="bg-slate-800 bg-opacity-40 backdrop-blur-xl p-6 sm:p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-20 mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-4">Your Public Profile</h2>
+          <p className="text-gray-400 mb-3 text-sm sm:text-base">Share this link with others:</p>
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={`${PUBLIC_BASE}/public/${userId}`}
               readOnly
-              className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 text-sm"
+              className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 text-xs sm:text-sm break-all"
             />
             <button
               onClick={() => copyToClipboard(`${PUBLIC_BASE}/public/${userId}`)}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all"
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all text-sm sm:text-base"
             >
               Copy
             </button>
@@ -489,7 +489,7 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold text-emerald-400 mb-6">Your Links ({links.length})</h2>
           
           {links.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">No links yet. Create one to get started!</p>
+            <p className="text-gray-400 text-center py-8 text-sm sm:text-base">No links yet. Create one to get started!</p>
           ) : (
             <div className="space-y-3">
               {links.map(link => (
@@ -497,12 +497,12 @@ export default function Dashboard() {
                   key={link._id}
                   className="bg-slate-900 border border-slate-700 p-4 rounded-lg hover:border-emerald-500 transition-all"
                 >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold text-lg">{link.title}</h3>
-                      <p className="text-gray-400 text-sm truncate">{link.url}</p>
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
+                    <div className="flex-1 w-full min-w-0">
+                      <h3 className="text-white font-semibold text-base sm:text-lg break-words">{link.title}</h3>
+                      <p className="text-gray-400 text-xs sm:text-sm break-all">{link.url}</p>
                       {link.description && (
-                        <p className="text-gray-400 text-xs mt-1">{link.description}</p>
+                        <p className="text-gray-400 text-xs mt-1 break-words">{link.description}</p>
                       )}
                       {link.rules && link.rules.length > 0 && (
                         <p className="text-emerald-400 text-xs mt-1">⚙️ {link.rules.length} rules active</p>
@@ -512,23 +512,23 @@ export default function Dashboard() {
                     {link.qrCode && (
                       <button
                         onClick={() => setShowQRModal(link)}
-                        className="ml-4 text-gray-400 hover:text-emerald-400 text-2xl transition-all"
+                        className="ml-0 sm:ml-4 text-gray-400 hover:text-emerald-400 text-2xl transition-all flex-shrink-0"
                         title="View QR Code"
                       >
                         📱
                       </button>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={() => editLink(link)}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded text-sm font-semibold transition-all"
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded text-xs sm:text-sm font-semibold transition-all"
                     >
                       ✏️ Edit
                     </button>
                     <button
                       onClick={() => deleteLink(link._id)}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm font-semibold transition-all"
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-xs sm:text-sm font-semibold transition-all"
                     >
                       🗑️ Delete
                     </button>

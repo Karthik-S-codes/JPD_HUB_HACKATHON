@@ -68,21 +68,21 @@ export default function Analytics() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-black to-black p-3 sm:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-emerald-400 hover:text-emerald-300 font-semibold transition-all flex items-center gap-2 mb-6"
+            className="text-emerald-400 hover:text-emerald-300 font-semibold transition-all flex items-center gap-2 mb-4 sm:mb-6 text-sm sm:text-base"
           >
             ← Back to Dashboard
           </button>
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold text-emerald-400">Analytics Dashboard</h1>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <h1 className="text-2xl sm:text-4xl font-bold text-emerald-400">Analytics Dashboard</h1>
             <button
               onClick={exportAnalyticsCSV}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-emerald-500/50"
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/50 text-sm sm:text-base"
             >
               <span>📊</span>
               <span>Export CSV</span>
@@ -91,47 +91,47 @@ export default function Analytics() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Total Visits */}
-          <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30">
+          <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium mb-2">Total Hub Visits</p>
-                <h2 className="text-5xl font-bold text-emerald-400">{analytics.totalVisits}</h2>
+                <p className="text-gray-400 text-xs sm:text-sm font-medium mb-2">Total Hub Visits</p>
+                <h2 className="text-3xl sm:text-5xl font-bold text-emerald-400">{analytics.totalVisits}</h2>
               </div>
-              <div className="text-5xl">👁️</div>
+              <div className="text-3xl sm:text-5xl">👁️</div>
             </div>
           </div>
 
           {/* Total Clicks */}
-          <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30">
+          <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium mb-2">Total Link Clicks</p>
-                <h2 className="text-5xl font-bold text-teal-400">{analytics.totalClicks}</h2>
+                <p className="text-gray-400 text-xs sm:text-sm font-medium mb-2">Total Link Clicks</p>
+                <h2 className="text-3xl sm:text-5xl font-bold text-teal-400">{analytics.totalClicks}</h2>
               </div>
-              <div className="text-5xl">🔗</div>
+              <div className="text-3xl sm:text-5xl">🔗</div>
             </div>
           </div>
         </div>
 
         {/* Top Performers */}
-        <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30 mb-8">
-          <h2 className="text-2xl font-bold text-emerald-400 mb-6">Top Performing Links</h2>
+        <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30 mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-4 sm:mb-6">Top Performing Links</h2>
           {analytics.topPerformers.length === 0 ? (
-            <p className="text-gray-400">No data yet</p>
+            <p className="text-gray-400 text-sm">No data yet</p>
           ) : (
             <div className="space-y-3">
               {analytics.topPerformers.map((link, idx) => (
-                <div key={idx} className="bg-slate-900 p-4 rounded-lg flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">{link.title}</p>
-                    <p className="text-gray-400 text-sm">
+                <div key={idx} className="bg-slate-900 p-4 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex-1 w-full">
+                    <p className="font-semibold text-white text-sm sm:text-base break-words">{link.title}</p>
+                    <p className="text-gray-400 text-xs sm:text-sm">
                       {link.clicks} clicks • {link.visits} visits
                     </p>
                   </div>
-                  <div className="flex gap-4 text-sm">
-                    <span className="bg-emerald-500 bg-opacity-20 text-emerald-400 px-3 py-1 rounded">
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <span className="bg-emerald-500 bg-opacity-20 text-emerald-400 px-3 py-1 rounded text-xs sm:text-sm whitespace-nowrap">
                       {((link.clicks / Math.max(analytics.totalClicks, 1)) * 100).toFixed(1)}%
                     </span>
                   </div>
@@ -142,34 +142,36 @@ export default function Analytics() {
         </div>
 
         {/* All Links Stats */}
-        <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30">
-          <h2 className="text-2xl font-bold text-emerald-400 mb-6">All Links Performance</h2>
+        <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30">
+          <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-4 sm:mb-6">All Links Performance</h2>
           {analytics.allLinks.length === 0 ? (
-            <p className="text-gray-400">No links created yet</p>
+            <p className="text-gray-400 text-sm">No links created yet</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="text-left py-3 px-4 text-gray-400 font-semibold">Link</th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-semibold">Clicks</th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-semibold">Visits</th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-semibold">CTR</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {analytics.allLinks.map((link, idx) => (
-                    <tr key={idx} className="border-b border-slate-700 hover:bg-slate-700 hover:bg-opacity-20 transition">
-                      <td className="py-3 px-4 text-white">{link.title}</td>
-                      <td className="py-3 px-4 text-center text-emerald-400">{link.clicks}</td>
-                      <td className="py-3 px-4 text-center text-teal-400">{link.visits}</td>
-                      <td className="py-3 px-4 text-center text-gray-400">
-                        {link.visits > 0 ? ((link.clicks / link.visits) * 100).toFixed(1) : 0}%
-                      </td>
+            <div className="overflow-x-auto -mx-6 sm:-mx-8 sm:mx-0">
+              <div className="inline-block min-w-full sm:min-w-0 px-6 sm:px-0">
+                <table className="w-full text-xs sm:text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left py-3 px-2 sm:px-4 text-gray-400 font-semibold">Link</th>
+                      <th className="text-center py-3 px-2 sm:px-4 text-gray-400 font-semibold">Clicks</th>
+                      <th className="text-center py-3 px-2 sm:px-4 text-gray-400 font-semibold">Visits</th>
+                      <th className="text-center py-3 px-2 sm:px-4 text-gray-400 font-semibold">CTR</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {analytics.allLinks.map((link, idx) => (
+                      <tr key={idx} className="border-b border-slate-700 hover:bg-slate-700 hover:bg-opacity-20 transition">
+                        <td className="py-3 px-2 sm:px-4 text-white truncate">{link.title}</td>
+                        <td className="py-3 px-2 sm:px-4 text-center text-emerald-400">{link.clicks}</td>
+                        <td className="py-3 px-2 sm:px-4 text-center text-teal-400">{link.visits}</td>
+                        <td className="py-3 px-2 sm:px-4 text-center text-gray-400">
+                          {link.visits > 0 ? ((link.clicks / link.visits) * 100).toFixed(1) : 0}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

@@ -147,16 +147,16 @@ export default function Public() {
   }
 
   return (
-    <div className={`min-h-screen p-6 ${
+    <div className={`min-h-screen p-3 sm:p-6 ${
       theme === "light" 
         ? "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200" 
-        : "bg-gradient-to-br from-slate-950 via-slate-900 to-black"
+        : "bg-gradient-to-br from-black via-black to-black"
     }`}>
       <div className="max-w-2xl mx-auto">
         {/* Back Button */}
         <button
           onClick={() => navigate("/")}
-          className={`mb-8 font-semibold transition-all flex items-center gap-2 ${
+          className={`mb-6 sm:mb-8 font-semibold transition-all flex items-center gap-2 text-sm sm:text-base ${
             theme === "light"
               ? "text-gray-700 hover:text-gray-900"
               : "text-emerald-400 hover:text-emerald-300"
@@ -166,34 +166,34 @@ export default function Public() {
         </button>
 
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 sm:mb-12">
           <div 
-            className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
+            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
             style={{ background: accentColor }}
           >
-            <span className="text-3xl font-bold text-white">
+            <span className="text-2xl sm:text-3xl font-bold text-white">
               {userName.charAt(0).toUpperCase()}
             </span>
           </div>
-          <h1 className={`text-4xl font-bold mb-2 ${
+          <h1 className={`text-2xl sm:text-4xl font-bold mb-2 ${
             theme === "light" ? "text-gray-900" : "text-emerald-400"
           }`}>
             {userName}'s Links
           </h1>
-          <p className={theme === "light" ? "text-gray-600" : "text-gray-400"}>
+          <p className={`text-sm sm:text-base ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
             Check out these awesome links
           </p>
         </div>
 
         {/* Theme Indicator */}
-        <div className={`text-center mb-6 text-sm ${
+        <div className={`text-center mb-4 sm:mb-6 text-xs sm:text-sm ${
           theme === "light" ? "text-gray-500" : "text-gray-500"
         }`}>
           {theme === "light" ? "☀️" : "🌙"} {theme === "light" ? "Light" : "Dark"} Theme
         </div>
 
         {/* Visitor's Country */}
-        <div className={`text-sm mb-4 ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+        <div className={`text-xs sm:text-sm mb-4 text-center ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
           📍 Showing links available in: {visitorCountryName}
         </div>
 
@@ -214,12 +214,12 @@ export default function Public() {
         {/* Links Container */}
         <div className="space-y-3 mb-8">
           {filteredLinks.length === 0 ? (
-            <div className={`backdrop-blur-lg p-12 rounded-2xl shadow-2xl border text-center ${
+            <div className={`backdrop-blur-lg p-8 sm:p-12 rounded-2xl shadow-2xl border text-center ${
               theme === "light"
                 ? "bg-white bg-opacity-70 border-gray-300"
                 : "bg-slate-800 bg-opacity-50 border-emerald-500 border-opacity-30"
             }`}>
-              <p className={`text-lg ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+              <p className={`text-base sm:text-lg ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
                 {links.length === 0 ? 'No links shared yet' : 'No links available at this time'}
               </p>
             </div>
@@ -227,20 +227,20 @@ export default function Public() {
             filteredLinks.map(link => (
               <div
                 key={link._id}
-                className={`backdrop-blur-lg p-6 rounded-xl border transition-all duration-300 shadow-lg ${
+                className={`backdrop-blur-lg p-4 sm:p-6 rounded-xl border transition-all duration-300 shadow-lg ${
                   theme === "light"
                     ? "bg-white bg-opacity-80 border-gray-200 hover:border-gray-400 hover:shadow-xl"
                     : "bg-slate-800 bg-opacity-50 border-emerald-500 border-opacity-30 hover:border-emerald-500 hover:border-opacity-100 hover:shadow-emerald-500/50"
                 }`}
               >
-                <div className="flex gap-6 items-center">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center">
                   {/* Link Info */}
                   <button
                     onClick={() => handleClick(link._id, link.url)}
-                    className="flex-1 text-left group"
+                    className="flex-1 text-left group w-full min-w-0"
                   >
                     <h3 
-                      className={`text-xl font-bold transition-all ${
+                      className={`text-base sm:text-xl font-bold transition-all break-words ${
                         theme === "light"
                           ? "text-gray-900 group-hover:text-gray-700"
                           : "text-white group-hover:text-emerald-400"
@@ -249,7 +249,7 @@ export default function Public() {
                     >
                       {link.title}
                     </h3>
-                    <p className={`text-sm mt-2 truncate ${
+                    <p className={`text-xs sm:text-sm mt-2 break-all ${
                       theme === "light"
                         ? "text-gray-600 hover:text-gray-800"
                         : "text-gray-400 hover:text-gray-300"
@@ -265,7 +265,7 @@ export default function Public() {
                         e.stopPropagation();
                         setShowQRModal(link);
                       }}
-                      className="text-3xl hover:scale-110 transition-transform"
+                      className="text-2xl sm:text-3xl hover:scale-110 transition-transform flex-shrink-0"
                       title="View QR Code"
                     >
                       📱
