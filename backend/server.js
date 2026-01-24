@@ -24,13 +24,31 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-// CORS configuration for frontend
+// CORS configuration for frontend (allow localhost + configured Vercel URL)
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "https://jpd-hub-hackathon.vercel.app",
+  "https://*.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
+
 const corsOptions = {
-  origin: [
-    "https://smart-links-eta.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000"
-  ],
+  origin: (origin, callback) => {
+    // Allow server-to-server or same-origin requests with no origin
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some((allowed) => {
+      // support exact match and wildcard *.vercel.app for preview deployments
+      if (allowed.includes("*.vercel.app")) {
+        const regex = /https:\/\/[a-zA-Z0-9-]+\.vercel\.app/;
+        return regex.test(origin);
+      }
+      return origin === allowed;
+    });
+
+    if (isAllowed) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
