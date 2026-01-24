@@ -31,23 +31,15 @@ const allowedOrigins = new Set([
 const vercelPreviewRegex = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/;
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // same-origin or server-to-server
-    const normalizedOrigin = normalize(origin);
-    const isAllowed = allowedOrigins.has(normalizedOrigin) || vercelPreviewRegex.test(normalizedOrigin);
-    if (isAllowed) return callback(null, true);
-    console.warn(`CORS blocked origin: ${origin}`);
-    return callback(new Error("Not allowed by CORS"));
-  },
+  origin: (origin, callback) => callback(null, true),
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"],
   preflightContinue: false,
   optionsSuccessStatus: 204
 };
-
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // ensure preflight succeeds
+app.options('*', cors(corsOptions)); // ensure preflight succeeds
 
 app.use(express.json());
 
