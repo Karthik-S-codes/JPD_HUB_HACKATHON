@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../services/api";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -79,10 +79,10 @@ export default function Public() {
       setLoading(true);
       setError("");
       
-      const url = `http://localhost:5000/public/${id}`;
+      const url = `/public/${id}`;
       console.log("Fetching from:", url);
       
-      const res = await axios.get(url);
+      const res = await api.get(url);
       
       console.log("✅ API Response received:", res.data);
       console.log("Response type:", typeof res.data);
@@ -122,7 +122,7 @@ export default function Public() {
 
   const handleClick = async (linkId, url) => {
     try {
-      await axios.post(`http://localhost:5000/click/${linkId}`);
+      await api.post(`/click/${linkId}`);
       window.open(url, "_blank");
     } catch (err) {
       console.error("Failed to track click");

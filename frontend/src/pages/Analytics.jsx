@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../services/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,7 +25,7 @@ export default function Analytics() {
   const fetchAnalytics = async (token) => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/analytics", {
+      const res = await api.get("/analytics", {
         headers: { authorization: token }
       });
       setAnalytics(res.data);
@@ -39,8 +39,8 @@ export default function Analytics() {
   const exportAnalyticsCSV = async () => {
     try {
       const userId = localStorage.getItem("userId");
-      const response = await axios.get(
-        `http://localhost:5000/analytics/export/${userId}`,
+      const response = await api.get(
+        `/analytics/export/${userId}`,
         { responseType: 'blob' }
       );
       

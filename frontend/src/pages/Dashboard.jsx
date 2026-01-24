@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../services/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -42,7 +42,7 @@ export default function Dashboard() {
 
   const fetchUserProfile = async (token) => {
     try {
-      const res = await axios.get("http://localhost:5000/user/profile", {
+      const res = await api.get("/user/profile", {
         headers: { authorization: token }
       });
       setTheme(res.data.theme || "dark");
@@ -54,7 +54,7 @@ export default function Dashboard() {
 
   const fetchLinks = async (token) => {
     try {
-      const res = await axios.get("http://localhost:5000/links", {
+      const res = await api.get("/links", {
         headers: { authorization: token }
       });
       setLinks(res.data);
@@ -77,15 +77,15 @@ export default function Dashboard() {
       const token = localStorage.getItem("token");
 
       if (editingId) {
-        await axios.put(
-          `http://localhost:5000/link/${editingId}`,
+        await api.put(
+          `/link/${editingId}`,
           { title, url, description, rules, allowedCountries },
           { headers: { authorization: token } }
         );
         setEditingId(null);
       } else {
-        await axios.post(
-          "http://localhost:5000/link",
+        await api.post(
+          "/link",
           { title, url, description, rules, allowedCountries },
           { headers: { authorization: token } }
         );
@@ -123,7 +123,7 @@ export default function Dashboard() {
     if (!confirm("Are you sure you want to delete this link?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/link/${id}`, {
+      await api.delete(`/link/${id}`, {
         headers: { authorization: localStorage.getItem("token") }
       });
       fetchLinks(localStorage.getItem("token"));
@@ -182,8 +182,8 @@ export default function Dashboard() {
   const updateTheme = async (newTheme) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
-        "http://localhost:5000/user/theme",
+      await api.put(
+        "/user/theme",
         { theme: newTheme },
         { headers: { authorization: token } }
       );
@@ -197,8 +197,8 @@ export default function Dashboard() {
   const updateAccentColor = async (newColor) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
-        "http://localhost:5000/user/accent-color",
+      await api.put(
+        "/user/accent-color",
         { accentColor: newColor },
         { headers: { authorization: token } }
       );
