@@ -25,20 +25,26 @@ const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 // CORS configuration for frontend (allow localhost + configured Vercel URL)
-const allowedOrigins = new Set([
+// Normalize URLs by removing trailing slashes to avoid mismatches
+const normalize = (url) => (url ? url.replace(/\/+$/, "") : url);
+
+const allowedOriginsRaw = [
   process.env.FRONTEND_URL || "https://jpd-hub-hackathon.vercel.app",
   "http://localhost:5173",
   "http://localhost:3000"
-]);
+];
+const allowedOrigins = new Set(allowedOriginsRaw.map(normalize));
 const vercelPreviewRegex = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/;
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // same-origin or server-to-server
 
+    const normalizedOrigin = normalize(origin);
+
     const isAllowed =
-      allowedOrigins.has(origin) ||
-      vercelPreviewRegex.test(origin);
+      allowedOrigins.has(normalizedOrigin) ||
+      vercelPreviewRegex.test(normalizedOrigin);
 
     if (isAllowed) return callback(null, true);
 
