@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 
 const ruleSchema = new mongoose.Schema({
   type: { type: String, enum: ["time", "device", "location", "performance"], default: "time" },
-  condition: String,
+  condition: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
   active: { type: Boolean, default: true }
 });
 
