@@ -15,11 +15,16 @@ export default function Dashboard() {
   const [showRuleModal, setShowRuleModal] = useState(null);
   const [rules, setRules] = useState([]);
   const [ruleType, setRuleType] = useState("time");  
+  const [allowedCountries, setAllowedCountries] = useState(["GLOBAL"]);
   // Time-based rule states
   const [ruleStartTime, setRuleStartTime] = useState("09:00");
   const [ruleEndTime, setRuleEndTime] = useState("17:00");
   const [selectedDays, setSelectedDays] = useState(["Mon", "Tue", "Wed", "Thu", "Fri"]);
-    const navigate = useNavigate();
+  // Theme states
+  const [theme, setTheme] = useState("dark");
+  const [accentColor, setAccentColor] = useState("#00ff00");
+  const [showThemeSettings, setShowThemeSettings] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -32,7 +37,20 @@ export default function Dashboard() {
     
     setUserId(id);
     fetchLinks(token);
+    fetchUserProfile(token);
   }, []);
+
+  const fetchUserProfile = async (token) => {
+    try {
+      const res = await axios.get("http://localhost:5000/user/profile", {
+        headers: { authorization: token }
+      });
+      setTheme(res.data.theme || "dark");
+      setAccentColor(res.data.accentColor || "#00ff00");
+    } catch (err) {
+      console.error("Failed to fetch user profile");
+    }
+  };
 
   const fetchLinks = async (token) => {
     try {
@@ -61,14 +79,14 @@ export default function Dashboard() {
       if (editingId) {
         await axios.put(
           `http://localhost:5000/link/${editingId}`,
-          { title, url, description, rules },
+          { title, url, description, rules, allowedCountries },
           { headers: { authorization: token } }
         );
         setEditingId(null);
       } else {
         await axios.post(
           "http://localhost:5000/link",
-          { title, url, description, rules },
+          { title, url, description, rules, allowedCountries },
           { headers: { authorization: token } }
         );
       }
@@ -82,6 +100,7 @@ export default function Dashboard() {
       setRuleStartTime("09:00");
       setRuleEndTime("17:00");
       setSelectedDays(["Mon", "Tue", "Wed", "Thu", "Fri"]);
+      setAllowedCountries(["GLOBAL"]);
       
       fetchLinks(token);
     } catch (err) {
@@ -96,6 +115,7 @@ export default function Dashboard() {
     setUrl(link.url);
     setDescription(link.description || "");
     setRules(link.rules || []);
+    setAllowedCountries(link.allowedCountries || ["GLOBAL"]);
     setEditingId(link._id);
   };
 
@@ -159,6 +179,36 @@ export default function Dashboard() {
     setRules(rules.filter((_, i) => i !== index));
   };
 
+  const updateTheme = async (newTheme) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        "http://localhost:5000/user/theme",
+        { theme: newTheme },
+        { headers: { authorization: token } }
+      );
+      setTheme(newTheme);
+    } catch (err) {
+      console.error("Failed to update theme:", err);
+      alert("Failed to update theme");
+    }
+  };
+
+  const updateAccentColor = async (newColor) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        "http://localhost:5000/user/accent-color",
+        { accentColor: newColor },
+        { headers: { authorization: token } }
+      );
+      setAccentColor(newColor);
+    } catch (err) {
+      console.error("Failed to update accent color:", err);
+      alert("Failed to update accent color");
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -186,6 +236,12 @@ export default function Dashboard() {
           <h1 className="text-4xl font-bold text-emerald-400">Link Hub Dashboard</h1>
           <div className="flex gap-2">
             <button
+              onClick={() => setShowThemeSettings(!showThemeSettings)}
+              className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold transition-all"
+            >
+              🎨 Theme
+            </button>
+            <button
               onClick={() => navigate("/analytics")}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold transition-all"
             >
@@ -199,6 +255,106 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Theme Settings Modal */}
+        {showThemeSettings && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-emerald-500 border-opacity-30 shadow-2xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-emerald-400">Theme Settings</h3>
+                <button
+                  onClick={() => setShowThemeSettings(false)}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Theme Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    Choose Theme
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => updateTheme("dark")}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        theme === "dark"
+                          ? "border-emerald-500 bg-emerald-500 bg-opacity-20"
+                          : "border-slate-600 hover:border-slate-500"
+                      }`}
+                    >
+                      <div className="text-3xl mb-2">🌙</div>
+                      <div className="text-white font-semibold">Dark</div>
+                    </button>
+                    <button
+                      onClick={() => updateTheme("light")}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        theme === "light"
+                          ? "border-emerald-500 bg-emerald-500 bg-opacity-20"
+                          : "border-slate-600 hover:border-slate-500"
+                      }`}
+                    >
+                      <div className="text-3xl mb-2">☀️</div>
+                      <div className="text-white font-semibold">Light</div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Accent Color Picker */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    Accent Color
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="h-12 w-16 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white"
+                      placeholder="#00ff00"
+                    />
+                    <button
+                      onClick={() => updateAccentColor(accentColor)}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-lg font-semibold transition-all"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  <p className="text-gray-400 text-xs mt-2">
+                    This color will be used on your public hub page
+                  </p>
+                </div>
+
+                {/* Preview */}
+                <div className="bg-slate-900 p-4 rounded-lg">
+                  <p className="text-gray-400 text-sm mb-2">Preview:</p>
+                  <div 
+                    className="h-12 rounded-lg flex items-center justify-center text-white font-semibold"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    Sample Button
+                  </div>
+                </div>
+
+                {/* Public Link */}
+                <div className="bg-slate-900 p-4 rounded-lg">
+                  <p className="text-gray-400 text-sm mb-2">Your Public Link:</p>
+                  <p className="text-emerald-400 text-sm break-all">
+                    http://localhost:5173/public/{userId}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add Link Section */}
         <div className="bg-slate-800 bg-opacity-40 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-20 mb-8">

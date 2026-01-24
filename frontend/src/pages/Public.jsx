@@ -11,6 +11,11 @@ export default function Public() {
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("User");
   const [showQRModal, setShowQRModal] = useState(null);
+  const [visitorCountryName, setVisitorCountryName] = useState("Your Region");
+  const [totalLinks, setTotalLinks] = useState(0);
+  const [visibleLinks, setVisibleLinks] = useState(0);
+  const [theme, setTheme] = useState("dark");
+  const [accentColor, setAccentColor] = useState("#00ff00");
 
   /**
    * Check if current time falls within the rule's time range
@@ -89,12 +94,19 @@ export default function Public() {
         const visibleLinks = res.data.links.filter(link => shouldShowLink(link.rules));
         setFilteredLinks(visibleLinks);
         setUserName(res.data.userName || "User");
+        setTotalLinks(res.data.links.length);
+        setVisibleLinks(visibleLinks.length);
+        setVisitorCountryName(res.data.visitorCountryName || "Your Region");
+        setTheme(res.data.theme || "dark");
+        setAccentColor(res.data.accentColor || "#00ff00");
       } else if (Array.isArray(res.data)) {
         // Fallback for array format
         console.log("📌 Using old format (is array)");
         setLinks(res.data);
         const visibleLinks = res.data.filter(link => shouldShowLink(link.rules));
         setFilteredLinks(visibleLinks);
+        setTotalLinks(res.data.length);
+        setVisibleLinks(visibleLinks.length);
       } else {
         console.error("❌ Unknown response format:", res.data);
         setError("Invalid data format from server");
@@ -120,35 +132,77 @@ export default function Public() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-black">
+      <div className={`min-h-screen flex items-center justify-center ${
+        theme === "light" 
+          ? "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200" 
+          : "bg-gradient-to-br from-slate-950 via-slate-900 to-black"
+      }`}>
         <div className="text-center">
-          <p className="text-emerald-400 text-xl">Loading links...</p>
+          <p className={`text-xl ${theme === "light" ? "text-gray-700" : "text-emerald-400"}`}>
+            Loading links...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-6">
+    <div className={`min-h-screen p-6 ${
+      theme === "light" 
+        ? "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200" 
+        : "bg-gradient-to-br from-slate-950 via-slate-900 to-black"
+    }`}>
       <div className="max-w-2xl mx-auto">
         {/* Back Button */}
         <button
           onClick={() => navigate("/")}
-          className="mb-8 text-emerald-400 hover:text-emerald-300 font-semibold transition-all flex items-center gap-2"
+          className={`mb-8 font-semibold transition-all flex items-center gap-2 ${
+            theme === "light"
+              ? "text-gray-700 hover:text-gray-900"
+              : "text-emerald-400 hover:text-emerald-300"
+          }`}
         >
           ← Back
         </button>
 
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+          <div 
+            className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
+            style={{ background: accentColor }}
+          >
             <span className="text-3xl font-bold text-white">
               {userName.charAt(0).toUpperCase()}
             </span>
           </div>
-          <h1 className="text-4xl font-bold text-emerald-400 mb-2">{userName}'s Links</h1>
-          <p className="text-gray-400">Check out these awesome links</p>
+          <h1 className={`text-4xl font-bold mb-2 ${
+            theme === "light" ? "text-gray-900" : "text-emerald-400"
+          }`}>
+            {userName}'s Links
+          </h1>
+          <p className={theme === "light" ? "text-gray-600" : "text-gray-400"}>
+            Check out these awesome links
+          </p>
         </div>
+
+        {/* Theme Indicator */}
+        <div className={`text-center mb-6 text-sm ${
+          theme === "light" ? "text-gray-500" : "text-gray-500"
+        }`}>
+          {theme === "light" ? "☀️" : "🌙"} {theme === "light" ? "Light" : "Dark"} Theme
+        </div>
+
+        {/* Visitor's Country */}
+        <div className={`text-sm mb-4 ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+          📍 Showing links available in: {visitorCountryName}
+        </div>
+
+        {/* Filter Stats */}
+        {totalLinks !== visibleLinks && (
+          <p className="text-emerald-400 text-sm mb-4">
+            {visibleLinks} of {totalLinks} links available in your region
+          </p>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -160,14 +214,24 @@ export default function Public() {
         {/* Links Container */}
         <div className="space-y-3 mb-8">
           {filteredLinks.length === 0 ? (
-            <div className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-12 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-30 text-center">
-              <p className="text-gray-400 text-lg">{links.length === 0 ? 'No links shared yet' : 'No links available at this time'}</p>
+            <div className={`backdrop-blur-lg p-12 rounded-2xl shadow-2xl border text-center ${
+              theme === "light"
+                ? "bg-white bg-opacity-70 border-gray-300"
+                : "bg-slate-800 bg-opacity-50 border-emerald-500 border-opacity-30"
+            }`}>
+              <p className={`text-lg ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+                {links.length === 0 ? 'No links shared yet' : 'No links available at this time'}
+              </p>
             </div>
           ) : (
             filteredLinks.map(link => (
               <div
                 key={link._id}
-                className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-6 rounded-xl border border-emerald-500 border-opacity-30 hover:border-emerald-500 hover:border-opacity-100 transition-all duration-300 shadow-lg hover:shadow-emerald-500/50"
+                className={`backdrop-blur-lg p-6 rounded-xl border transition-all duration-300 shadow-lg ${
+                  theme === "light"
+                    ? "bg-white bg-opacity-80 border-gray-200 hover:border-gray-400 hover:shadow-xl"
+                    : "bg-slate-800 bg-opacity-50 border-emerald-500 border-opacity-30 hover:border-emerald-500 hover:border-opacity-100 hover:shadow-emerald-500/50"
+                }`}
               >
                 <div className="flex gap-6 items-center">
                   {/* Link Info */}
@@ -175,10 +239,21 @@ export default function Public() {
                     onClick={() => handleClick(link._id, link.url)}
                     className="flex-1 text-left group"
                   >
-                    <h3 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-all">
+                    <h3 
+                      className={`text-xl font-bold transition-all ${
+                        theme === "light"
+                          ? "text-gray-900 group-hover:text-gray-700"
+                          : "text-white group-hover:text-emerald-400"
+                      }`}
+                      style={{ color: theme === "light" ? undefined : accentColor }}
+                    >
                       {link.title}
                     </h3>
-                    <p className="text-gray-400 text-sm mt-2 truncate hover:text-gray-300">
+                    <p className={`text-sm mt-2 truncate ${
+                      theme === "light"
+                        ? "text-gray-600 hover:text-gray-800"
+                        : "text-gray-400 hover:text-gray-300"
+                    }`}>
                       {link.url}
                     </p>
                   </button>

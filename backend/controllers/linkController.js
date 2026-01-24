@@ -12,6 +12,7 @@
 const Link = require("../models/Link");
 const Analytics = require("../models/Analytics");
 const QRCode = require("qrcode");
+const { generateAnalyticsCSV, generateCSVFilename } = require("../utils/csvExport");
 
 /**
  * Create a new shortened link with QR code
@@ -191,6 +192,55 @@ exports.reorderLinks = async (req, res) => {
 };
 
 /**
+ * Filter links based on visitor's location
+ * 
+ * @param {Object} link - Link document
+ * @param {string} visitorCountry - Visitor's country code
+ * @returns {boolean} - True if link should be visible
+ */
+const isLinkVisibleByLocation = (link, visitorCountry) => {
+  // If no allowed countries specified, show to all
+  if (!link.allowedCountries || link.allowedCountries.length === 0) {
+    return true;
+  }
+
+  // Check if GLOBAL is in allowed countries (visible to everyone)
+  if (link.allowedCountries.includes("GLOBAL")) {
+    return true;
+  }
+
+  // Check if visitor's country is in allowed countries
+  if (link.allowedCountries.includes(visitorCountry)) {
+    return true;
+  }
+
+  // Link not visible to this country
+  return false;
+};
+
+/**
+ * Filter links based on visitor's device type
+ * 
+ * @param {Object} link - Link document
+ * @param {string} visitorDevice - Visitor's device type
+ * @returns {boolean} - True if link should be visible
+ */
+const isLinkVisibleByDevice = (link, visitorDevice) => {
+  // If no allowed devices specified or contains "all", show to all
+  if (!link.allowedDevices || link.allowedDevices.length === 0 || link.allowedDevices.includes("all")) {
+    return true;
+  }
+
+  // Check if visitor's device is in allowed devices
+  if (link.allowedDevices.includes(visitorDevice)) {
+    return true;
+  }
+
+  // Link not visible to this device
+  return false;
+};
+
+/**
  * Get public links for a user's profile
  * 
  * Returns limited link data for public display with user information.
@@ -205,24 +255,41 @@ exports.getPublicLinks = async (req, res) => {
   try {
     const User = require("../models/User");
     
-    // Get user info
+    // Get user info including theme preference
     const user = await User.findById(req.params.userId)
-      .select("name hubTitle hubDescription");
+      .select("name hubTitle hubDescription theme accentColor");
     
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     
-    // Get user's links
-    const links = await Link.find({ userId: req.params.userId })
-      .select("title url description clicks visits qrCode order rules")
+    // Get user's links with location data
+    const allLinks = await Link.find({ userId: req.params.userId })
+      .select("title url description clicks visits qrCode order rules allowedCountries allowedDevices")
       .sort({ order: 1 });
+
+    // Filter links based on visitor's country AND device
+    const visibleLinks = allLinks.filter(link => {
+      const countryMatch = isLinkVisibleByLocation(link, req.country);
+      const deviceMatch = isLinkVisibleByDevice(link, req.deviceType);
+      return countryMatch && deviceMatch; // Both must pass
+    });
+
+    console.log(`[Filters] Country: ${req.country} | Device: ${req.deviceType} | Total: ${allLinks.length} | Visible: ${visibleLinks.length}`);
 
     res.json({
       userName: user.name,
       hubTitle: user.hubTitle,
       hubDescription: user.hubDescription,
-      links: links
+      theme: user.theme,
+      accentColor: user.accentColor,
+      visitorCountry: req.country,
+      visitorCountryName: req.countryName,
+      visitorDevice: req.deviceType,
+      visitorDeviceInfo: req.deviceInfo,
+      totalLinks: allLinks.length,
+      visibleLinks: visibleLinks.length,
+      links: visibleLinks
     });
   } catch (err) {
     console.error("Get public links error:", err);
@@ -314,3 +381,62 @@ exports.getAnalytics = async (req, res) => {
     res.status(500).json({ message: "Error fetching analytics" });
   }
 };
+
+/**
+ * Export analytics data as CSV
+ * 
+ * Generates a downloadable CSV file containing analytics data for all user links.
+ * Includes link title, URL, clicks, visits, last clicked date, and created date.
+ * 
+ * @param {Object} req - Express request object
+ * @param {string} req.params.userId - User ID whose analytics to export
+ * @param {Object} res - Express response object
+ * @returns {File} CSV file download
+ */
+exports.exportAnalytics = async (req, res) => {
+  try {
+    const User = require("../models/User");
+    
+    // Get user info
+    const user = await User.findById(req.params.userId).select("name");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get all links with analytics data
+    const links = await Link.find({ userId: req.params.userId })
+      .select("title url clicks visits createdAt updatedAt")
+      .sort({ clicks: -1 });
+
+    if (links.length === 0) {
+      return res.status(404).json({ message: "No links found for this user" });
+    }
+
+    // Add lastClicked field (use updatedAt as proxy)
+    const linksWithLastClicked = links.map(link => ({
+      title: link.title,
+      url: link.url,
+      clicks: link.clicks,
+      visits: link.visits,
+      lastClicked: link.clicks > 0 ? link.updatedAt : null,
+      createdAt: link.createdAt
+    }));
+
+    // Generate CSV
+    const csv = generateAnalyticsCSV(linksWithLastClicked, user.name);
+    const filename = generateCSVFilename(user.name);
+
+    // Set headers for CSV download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Pragma", "no-cache");
+
+    // Send CSV
+    res.status(200).send(csv);
+  } catch (err) {
+    console.error("Export analytics error:", err);
+    res.status(500).json({ message: "Error exporting analytics" });
+  }
+};
+

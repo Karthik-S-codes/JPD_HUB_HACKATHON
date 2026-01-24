@@ -426,8 +426,11 @@ Record a click on a public link for analytics.
       active: Boolean
     }
   ],
+  allowedCountries: [String], // ['GLOBAL', 'IN', 'US', etc.]
+  allowedDevices: [String], // ['all', 'mobile', 'desktop', 'tablet']
   createdAt: Date,
   updatedAt: Date
+}
 }
 ```
 
@@ -484,12 +487,305 @@ For production deployment, implement rate limiting:
 
 1. **Sign Up**: `POST /signup` → Get token
 2. **Create Links**: `POST /link` → Multiple times
-3. **Share Public Hub**: Get public URL `/public/:userId`
-4. **Users Click Links**: `POST /click/:linkId` → Tracked
-5. **View Analytics**: `GET /analytics` → See metrics
+3. **Update Theme**: `PUT /user/theme` → Customize public page
+4. **Share Public Hub**: Get public URL `/public/:userId`
+5. **Users Click Links**: `POST /click/:linkId` → Tracked
+6. **View Analytics**: `GET /analytics` → See metrics
+7. **Export Analytics**: `GET /analytics/export/:userId` → Download CSV
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: January 2024  
-**Author**: JPD HUB Team
+## 👤 User Profile Endpoints
+
+### Get User Profile
+Retrieve current user's profile information including theme and accent color.
+
+**Endpoint:** `GET /user/profile`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response (200):**
+```json
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "hubTitle": "John's Links",
+  "hubDescription": "All my important links",
+  "theme": "dark",
+  "accentColor": "#00ff00",
+  "totalVisits": 1523,
+  "createdAt": "2024-01-15T10:30:00Z",
+  "updatedAt": "2024-01-24T14:22:00Z"
+}
+```
+
+**Error (404):**
+```json
+{
+  "message": "User not found"
+}
+```
+
+---
+
+### Update Profile
+Update user profile information.
+
+**Endpoint:** `PUT /user/profile`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "name": "John Doe",
+  "hubTitle": "My Awesome Links",
+  "hubDescription": "Check out these links!"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Profile updated",
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "John Doe",
+    "hubTitle": "My Awesome Links",
+    "hubDescription": "Check out these links!",
+    "theme": "dark",
+    "accentColor": "#00ff00"
+  }
+}
+```
+
+---
+
+### Update Theme
+Change user's theme preference (light or dark).
+
+**Endpoint:** `PUT /user/theme`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "theme": "light"
+}
+```
+
+**Valid Values:**
+- `"dark"` - Dark theme (default)
+- `"light"` - Light theme
+
+**Response (200):**
+```json
+{
+  "message": "Theme updated successfully",
+  "theme": "light"
+}
+```
+
+**Error (400):**
+```json
+{
+  "message": "Invalid theme. Must be 'light' or 'dark'"
+}
+```
+
+---
+
+### Update Accent Color
+Change the accent color for public hub page.
+
+**Endpoint:** `PUT /user/accent-color`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "accentColor": "#ff5500"
+}
+```
+
+**Valid Format:**
+- Hex color codes: `#RGB` or `#RRGGBB`
+- Examples: `#00f`, `#00ff00`, `#FF5500`
+
+**Response (200):**
+```json
+{
+  "message": "Accent color updated successfully",
+  "accentColor": "#ff5500"
+}
+```
+
+**Error (400):**
+```json
+{
+  "message": "Invalid color. Must be a valid hex color (e.g., #00ff00)"
+}
+```
+
+---
+
+## 📊 Analytics Export Endpoints
+
+### Export Analytics as CSV
+Download all link analytics data as a CSV file.
+
+**Endpoint:** `GET /analytics/export/:userId`
+
+**Parameters:**
+- `userId` (path) - User's MongoDB ObjectId
+
+**Response (200):**
+- **Content-Type:** `text/csv`
+- **Content-Disposition:** `attachment; filename="username_analytics_YYYY-MM-DD.csv"`
+
+**CSV Format:**
+```
+Link Title,URL,Total Clicks,Total Visits,Last Clicked,Created Date
+My GitHub,https://github.com/johndoe,152,189,2026-01-24,2026-01-15
+Desktop Software,https://desktop.example.com,89,102,2026-01-23,2026-01-16
+Universal Link,https://example.com,245,301,2026-01-24,2026-01-14
+```
+
+**Example Response:**
+- File auto-downloads as CSV
+- Filename: `johndoe_analytics_2026-01-24.csv`
+
+**Error (404):**
+```json
+{
+  "message": "User not found"
+}
+```
+
+**Error (404):**
+```json
+{
+  "message": "No links found for this user"
+}
+```
+
+---
+
+## 📍 Location & Device Filtering
+
+### Get Public Links (with Filtering)
+Public links are filtered based on:
+1. **Visitor's Location** (Geolocation via IP)
+2. **Visitor's Device Type** (Mobile, Desktop, Tablet)
+3. **Theme Preference** (Light or Dark)
+
+**Endpoint:** `GET /public/:userId`
+
+**Response (200):**
+```json
+{
+  "userName": "John Doe",
+  "hubTitle": "John's Links",
+  "hubDescription": "All my important links",
+  "theme": "dark",
+  "accentColor": "#00ff00",
+  "visitorCountry": "IN",
+  "visitorCountryName": "India",
+  "visitorDevice": "desktop",
+  "visitorDeviceInfo": {
+    "deviceType": "desktop",
+    "browser": "Chrome",
+    "browserVersion": "120.0",
+    "os": "Windows",
+    "osVersion": "10",
+    "device": "Desktop"
+  },
+  "totalLinks": 8,
+  "visibleLinks": 6,
+  "links": [
+    {
+      "_id": "507f1f77bcf86cd799439012",
+      "title": "My GitHub",
+      "url": "https://github.com/johndoe",
+      "description": "My GitHub profile",
+      "clicks": 15,
+      "visits": 45,
+      "qrCode": "data:image/png;base64,iVBORw0KG...",
+      "allowedCountries": ["GLOBAL"],
+      "allowedDevices": ["all"]
+    }
+  ]
+}
+```
+
+**Filtering Logic:**
+- **Location**: Links with `allowedCountries: ["GLOBAL"]` visible everywhere; others only in specified countries
+- **Device**: Links with `allowedDevices: ["all"]` visible on all devices; others only on specified devices
+- **Combined**: Both filters use AND logic (country match AND device match required)
+
+---
+
+## 📱 Device Types
+
+Automatically detected from User-Agent:
+
+| Device Type | Detection | Example |
+|-------------|-----------|---------|
+| `mobile` | iOS, Android phones | iPhone, Samsung Galaxy |
+| `desktop` | Windows, Mac, Linux | Windows PC, MacBook |
+| `tablet` | iPad, Android tablets | iPad Pro, Galaxy Tab |
+| `all` | All devices (default) | Unrestricted |
+
+### Setting Device Restrictions
+```json
+// Mobile only
+"allowedDevices": ["mobile"]
+
+// Desktop only
+"allowedDevices": ["desktop"]
+
+// Mobile and tablet
+"allowedDevices": ["mobile", "tablet"]
+
+// All devices (default)
+"allowedDevices": ["all"]
+```
+
+---
+
+## 🌍 Location Codes
+
+Common country codes for `allowedCountries`:
+
+| Code | Country | Code | Country |
+|------|---------|------|---------|
+| `GLOBAL` | Worldwide | `IN` | India |
+| `US` | United States | `GB` | United Kingdom |
+| `CA` | Canada | `AU` | Australia |
+| `DE` | Germany | `FR` | France |
+| `JP` | Japan | `CN` | China |
+| `BR` | Brazil | `RU` | Russia |
+
+**Geolocation Source:** ip-api.com (45 req/min free tier)
+
+---
+
+**Version**: 2.0.0  
+**Last Updated**: January 24, 2026  
+**Author**: JPD HUB Team  
+**Latest Features**: Device Detection, Location Filtering, Theme Toggle, CSV Export, User Profiles

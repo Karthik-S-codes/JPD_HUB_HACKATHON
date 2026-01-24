@@ -19,6 +19,8 @@ const linkSchema = new mongoose.Schema({
   order: { type: Number, default: 0 },
   rules: [ruleSchema],
   qrCode: { type: String, default: null },
+  allowedCountries: { type: [String], default: ["GLOBAL"] },
+    allowedDevices: { type: [String], default: ["all"] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

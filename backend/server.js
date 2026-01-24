@@ -12,14 +12,27 @@ const {
   stopCleanup
 } = require("./middleware/rateLimiter");
 
+// Import geolocation middleware
+const { geoLocationMiddleware } = require("./middleware/geoLocation");
+
+// Import device detection middleware
+const { deviceDetectionMiddleware } = require("./middleware/deviceDetection");
+
 const authRoutes = require("./routes/authRoutes");
 const linkRoutes = require("./routes/linkRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 connectDB();
+
+// Apply geolocation middleware to all requests
+app.use(geoLocationMiddleware);
+
+// Apply device detection middleware to all requests
+app.use(deviceDetectionMiddleware);
 
 // Apply rate limiting middleware
 // Auth endpoints (login, signup) - strict limits to prevent brute force
@@ -36,6 +49,7 @@ app.use("/analytics", userLimiter);
 
 app.use(authRoutes);
 app.use(linkRoutes);
+app.use("/user", userRoutes);
 
 const server = app.listen(process.env.PORT, () =>
   console.log("Server running on port " + process.env.PORT)

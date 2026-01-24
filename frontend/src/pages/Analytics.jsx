@@ -36,6 +36,29 @@ export default function Analytics() {
     }
   };
 
+  const exportAnalyticsCSV = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const response = await axios.get(
+        `http://localhost:5000/analytics/export/${userId}`,
+        { responseType: 'blob' }
+      );
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `analytics_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export analytics:", err);
+      alert("Failed to export analytics");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-black">
@@ -55,7 +78,16 @@ export default function Analytics() {
           >
             ← Back to Dashboard
           </button>
-          <h1 className="text-4xl font-bold text-emerald-400">Analytics Dashboard</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-4xl font-bold text-emerald-400">Analytics Dashboard</h1>
+            <button
+              onClick={exportAnalyticsCSV}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-emerald-500/50"
+            >
+              <span>📊</span>
+              <span>Export CSV</span>
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}

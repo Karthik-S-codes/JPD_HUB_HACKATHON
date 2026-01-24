@@ -8,7 +8,8 @@ const {
   reorderLinks,
   getPublicLinks,
   trackClick,
-  getAnalytics
+  getAnalytics,
+  exportAnalytics
 } = require("../controllers/linkController");
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.put("/link/:id", auth, updateLink);
 router.delete("/link/:id", auth, deleteLink);
 router.post("/links/reorder", auth, reorderLinks);
 router.get("/analytics", auth, getAnalytics);
+router.get("/analytics/export/:userId", exportAnalytics);
 router.get("/public/:userId", getPublicLinks);
 router.post("/click/:id", trackClick);
 
