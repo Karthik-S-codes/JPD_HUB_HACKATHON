@@ -57,11 +57,15 @@ exports.signup = async (req, res) => {
     const user = new User({ name, email, password: hashed });
     await user.save();
 
-    res.status(201).json({ message: "Signup successful" });
+    res.status(201).json({ 
+      message: "Signup successful", 
+      userId: user._id,
+      email: user.email 
+    });
   } catch (err) {
     // Log error for debugging
-    console.error("Signup error:", err);
-    res.status(500).json({ message: "Signup failed" });
+    console.error("Signup error:", err.message);
+    res.status(500).json({ message: err.message || "Signup failed" });
   }
 };
 

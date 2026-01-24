@@ -63,25 +63,45 @@ export default function Public() {
   };
 
   useEffect(() => {
+    console.log("Component mounted, userId:", id);
     fetchPublicLinks();
   }, [id]);
 
   const fetchPublicLinks = async () => {
     try {
+      console.log("Starting fetch for userId:", id);
       setLoading(true);
       setError("");
-      const res = await axios.get(`http://localhost:5000/public/${id}`);
-      setLinks(res.data);
       
-      // Filter links based on active rules
-      const visibleLinks = res.data.filter(link => shouldShowLink(link.rules));
-      setFilteredLinks(visibleLinks);
+      const url = `http://localhost:5000/public/${id}`;
+      console.log("Fetching from:", url);
       
-      if (res.data.length > 0) {
-        setUserName(res.data[0].userName || "User");
+      const res = await axios.get(url);
+      
+      console.log("✅ API Response received:", res.data);
+      console.log("Response type:", typeof res.data);
+      
+      // Handle new response format with user info
+      if (res.data && res.data.links) {
+        console.log("📌 Using new format (has links array)");
+        setLinks(res.data.links);
+        const visibleLinks = res.data.links.filter(link => shouldShowLink(link.rules));
+        setFilteredLinks(visibleLinks);
+        setUserName(res.data.userName || "User");
+      } else if (Array.isArray(res.data)) {
+        // Fallback for array format
+        console.log("📌 Using old format (is array)");
+        setLinks(res.data);
+        const visibleLinks = res.data.filter(link => shouldShowLink(link.rules));
+        setFilteredLinks(visibleLinks);
+      } else {
+        console.error("❌ Unknown response format:", res.data);
+        setError("Invalid data format from server");
       }
     } catch (err) {
-      setError("Failed to load links. This user may not exist.");
+      console.error("❌ Fetch error:", err.message);
+      console.error("Full error:", err);
+      setError("Failed to load links: " + err.message);
     } finally {
       setLoading(false);
     }

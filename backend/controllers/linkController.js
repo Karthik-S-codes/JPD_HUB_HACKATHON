@@ -193,21 +193,37 @@ exports.reorderLinks = async (req, res) => {
 /**
  * Get public links for a user's profile
  * 
- * Returns limited link data for public display.
+ * Returns limited link data for public display with user information.
  * Does not require authentication.
  * 
  * @param {Object} req - Express request object
  * @param {string} req.params.userId - User ID whose links to retrieve
  * @param {Object} res - Express response object
- * @returns {Array} Array of public link data
+ * @returns {Object} User info and array of public link data
  */
 exports.getPublicLinks = async (req, res) => {
   try {
+    const User = require("../models/User");
+    
+    // Get user info
+    const user = await User.findById(req.params.userId)
+      .select("name hubTitle hubDescription");
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Get user's links
     const links = await Link.find({ userId: req.params.userId })
-      .select("title url description clicks visits qrCode order")
+      .select("title url description clicks visits qrCode order rules")
       .sort({ order: 1 });
 
-    res.json(links);
+    res.json({
+      userName: user.name,
+      hubTitle: user.hubTitle,
+      hubDescription: user.hubDescription,
+      links: links
+    });
   } catch (err) {
     console.error("Get public links error:", err);
     res.status(500).json({ message: "Error fetching links" });

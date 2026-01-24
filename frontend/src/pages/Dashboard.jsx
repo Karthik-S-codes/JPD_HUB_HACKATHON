@@ -65,7 +65,6 @@ export default function Dashboard() {
           { headers: { authorization: token } }
         );
         setEditingId(null);
-        setRules([]);
       } else {
         await axios.post(
           "http://localhost:5000/link",
@@ -74,9 +73,16 @@ export default function Dashboard() {
         );
       }
 
+      // Reset all form fields and state
       setTitle("");
       setUrl("");
       setDescription("");
+      setRules([]);
+      setRuleType("time");
+      setRuleStartTime("09:00");
+      setRuleEndTime("17:00");
+      setSelectedDays(["Mon", "Tue", "Wed", "Thu", "Fri"]);
+      
       fetchLinks(token);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save link");
@@ -307,12 +313,12 @@ export default function Dashboard() {
           <div className="flex gap-2">
             <input
               type="text"
-              value={`http://localhost:5174/public/${userId}`}
+              value={`http://localhost:5173/public/${userId}`}
               readOnly
               className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 text-sm"
             />
             <button
-              onClick={() => copyToClipboard(`http://localhost:5174/public/${userId}`)}
+              onClick={() => copyToClipboard(`http://localhost:5173/public/${userId}`)}
               className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all"
             >
               Copy
