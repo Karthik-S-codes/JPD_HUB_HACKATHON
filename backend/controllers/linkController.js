@@ -440,3 +440,95 @@ exports.exportAnalytics = async (req, res) => {
   }
 };
 
+/**
+ * Get Public Hub by Slug
+ * 
+ * Fetches user's public hub data using their unique slug instead of user ID.
+ * Provides a clean, human-readable URL for sharing.
+ * 
+ * @route GET /hub/:slug
+ * @param {Object} req - Express request object
+ * @param {string} req.params.slug - User's unique hub slug (e.g., "anika-sharma")
+ * @param {Object} res - Express response object
+ * @returns {Object} User info and array of public links
+ * 
+ * Response Format:
+ * {
+ *   userName: "Anika Sharma",
+ *   hubSlug: "anika-sharma",
+ *   hubTitle: "My Links",
+ *   hubDescription: "Welcome to my hub",
+ *   theme: "dark",
+ *   accentColor: "#00ff00",
+ *   visitorCountry: "US",
+ *   visitorCountryName: "United States",
+ *   visitorDevice: "desktop",
+ *   totalLinks: 10,
+ *   visibleLinks: 8,
+ *   links: [...]
+ * }
+ * 
+ * Error Responses:
+ * - 404: Slug not found or invalid
+ * - 500: Server error
+ */
+exports.getPublicHubBySlug = async (req, res) => {
+  try {
+    const { isValidSlug } = require("../utils/slugGenerator");
+    const User = require("../models/User");
+    
+    const slug = req.params.slug;
+
+    // Validate slug format
+    if (!isValidSlug(slug)) {
+      return res.status(404).json({ 
+        message: "Invalid hub URL",
+        slug: slug
+      });
+    }
+
+    // Find user by slug
+    const user = await User.findOne({ hubSlug: slug })
+      .select("name hubSlug hubTitle hubDescription theme accentColor");
+    
+    if (!user) {
+      return res.status(404).json({ 
+        message: "Hub not found",
+        slug: slug
+      });
+    }
+    
+    // Get user's links with filtering
+    const allLinks = await Link.find({ userId: user._id })
+      .select("title url description clicks visits qrCode order rules allowedCountries allowedDevices")
+      .sort({ order: 1 });
+
+    // Filter links based on visitor's country AND device
+    const visibleLinks = allLinks.filter(link => {
+      const countryMatch = isLinkVisibleByLocation(link, req.country);
+      const deviceMatch = isLinkVisibleByDevice(link, req.deviceType);
+      return countryMatch && deviceMatch;
+    });
+
+    console.log(`[Hub: ${slug}] Country: ${req.country} | Device: ${req.deviceType} | Total: ${allLinks.length} | Visible: ${visibleLinks.length}`);
+
+    res.json({
+      userName: user.name,
+      hubSlug: user.hubSlug,
+      hubTitle: user.hubTitle,
+      hubDescription: user.hubDescription,
+      theme: user.theme,
+      accentColor: user.accentColor,
+      visitorCountry: req.country,
+      visitorCountryName: req.countryName,
+      visitorDevice: req.deviceType,
+      visitorDeviceInfo: req.deviceInfo,
+      totalLinks: allLinks.length,
+      visibleLinks: visibleLinks.length,
+      links: visibleLinks
+    });
+  } catch (err) {
+    console.error("Get public hub by slug error:", err);
+    res.status(500).json({ message: "Error fetching hub data" });
+  }
+};

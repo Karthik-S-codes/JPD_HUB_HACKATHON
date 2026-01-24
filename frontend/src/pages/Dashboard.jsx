@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [userId, setUserId] = useState("");
+  const [hubSlug, setHubSlug] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [showQRModal, setShowQRModal] = useState(null);
   const [showRuleModal, setShowRuleModal] = useState(null);
@@ -49,6 +50,7 @@ export default function Dashboard() {
       });
       setTheme(res.data.theme || "dark");
       setAccentColor(res.data.accentColor || "#00ff00");
+      setHubSlug(res.data.hubSlug || "");
     } catch (err) {
       console.error("Failed to fetch user profile");
     }
@@ -348,9 +350,12 @@ export default function Dashboard() {
 
                 {/* Public Link */}
                 <div className="bg-slate-900 p-4 rounded-lg">
-                  <p className="text-gray-400 text-sm mb-2">Your Public Link:</p>
-                  <p className="text-emerald-400 text-sm break-all">
-                    {`${PUBLIC_BASE}/public/${userId}`}
+                  <p className="text-gray-400 text-sm mb-2">Your Public Hub URL:</p>
+                  <p className="text-emerald-400 text-sm break-all font-semibold">
+                    {hubSlug ? `${PUBLIC_BASE}/hub/${hubSlug}` : `${PUBLIC_BASE}/public/${userId}`}
+                  </p>
+                  <p className="text-gray-500 text-xs mt-1">
+                    Share this clean URL with anyone to showcase your links
                   </p>
                 </div>
               </div>
@@ -466,22 +471,29 @@ export default function Dashboard() {
 
         {/* Public Link Section */}
         <div className="bg-slate-800 bg-opacity-40 backdrop-blur-xl p-6 sm:p-8 rounded-2xl shadow-2xl border border-emerald-500 border-opacity-20 mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-4">Your Public Profile</h2>
-          <p className="text-gray-400 mb-3 text-sm sm:text-base">Share this link with others:</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 mb-4">Your Public Hub</h2>
+          <p className="text-gray-400 mb-3 text-sm sm:text-base">
+            Share this clean, memorable URL with others:
+          </p>
           <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
-              value={`${PUBLIC_BASE}/public/${userId}`}
+              value={hubSlug ? `${PUBLIC_BASE}/hub/${hubSlug}` : `${PUBLIC_BASE}/public/${userId}`}
               readOnly
-              className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 text-xs sm:text-sm break-all"
+              className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-emerald-400 text-xs sm:text-sm break-all font-semibold"
             />
             <button
-              onClick={() => copyToClipboard(`${PUBLIC_BASE}/public/${userId}`)}
+              onClick={() => copyToClipboard(hubSlug ? `${PUBLIC_BASE}/hub/${hubSlug}` : `${PUBLIC_BASE}/public/${userId}`)}
               className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold transition-all text-sm sm:text-base"
             >
-              Copy
+              Copy Link
             </button>
           </div>
+          {hubSlug && (
+            <p className="text-gray-500 text-xs mt-2">
+              ✨ Your personalized hub: <span className="text-emerald-400 font-semibold">{hubSlug}</span>
+            </p>
+          )}
         </div>
 
         {/* Links List */}

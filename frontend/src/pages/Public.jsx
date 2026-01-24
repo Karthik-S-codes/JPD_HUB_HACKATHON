@@ -79,8 +79,10 @@ export default function Public() {
       setLoading(true);
       setError("");
       
-      const url = `/public/${id}`;
-      console.log("Fetching from:", url);
+      // Determine if ID is a slug (contains hyphens, lowercase) or a MongoDB ID (hex)
+      const isSlug = id.includes('-') || /^[a-z0-9-]+$/.test(id);
+      const url = isSlug ? `/hub/${id}` : `/public/${id}`;
+      console.log(`Fetching from: ${url} (detected as ${isSlug ? 'slug' : 'user ID'})`);
       
       const res = await api.get(url);
       

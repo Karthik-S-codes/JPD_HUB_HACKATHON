@@ -14,6 +14,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/public/:id" element={<Public />} />
+        <Route path="/hub/:id" element={<Public />} />
       </Routes>
     </BrowserRouter>
   );

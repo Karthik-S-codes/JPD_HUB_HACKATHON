@@ -16,7 +16,7 @@ Authorization: Bearer <token>
 ## 🔐 Authentication Endpoints
 
 ### Sign Up
-Create a new user account.
+Create a new user account. Automatically generates a unique slug for the user's public hub.
 
 **Endpoint:** `POST /signup`
 
@@ -32,19 +32,37 @@ Create a new user account.
 **Response (201):**
 ```json
 {
-  "_id": "507f1f77bcf86cd799439011",
-  "name": "John Doe",
+  "message": "Signup successful",
+  "userId": "507f1f77bcf86cd799439011",
   "email": "john@example.com",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "hubSlug": "john-doe",
+  "hubUrl": "/hub/john-doe"
 }
 ```
+
+**Response Fields:**
+- `userId` - Unique user identifier
+- `email` - Registered email address
+- `hubSlug` - Auto-generated unique slug for public hub (NEW)
+- `hubUrl` - Relative URL path to public hub (NEW)
 
 **Error (400):**
 ```json
 {
-  "error": "Email already registered"
+  "message": "Email already registered"
 }
 ```
+
+**Slug Generation:**
+- Automatically generated from user's name
+- Lowercase, hyphen-separated format
+- Unique across all users
+- Duplicate names get numbered suffixes (e.g., "john-doe-1")
+
+**Examples:**
+- "Anika Sharma" → `anika-sharma`
+- "John's Hub!" → `johns-hub`
+- "User_Name#123" → `user-name-123`
 
 ---
 
@@ -335,8 +353,72 @@ Authorization: Bearer <token>
 
 ## 👥 Public Hub Endpoints
 
-### Get Public Links
-Retrieve a user's links for public viewing (no authentication required).
+### Get Public Hub by Slug (Recommended)
+Retrieve a user's hub using their unique slug for clean, shareable URLs.
+
+**Endpoint:** `GET /hub/:slug`
+
+**Parameters:**
+- `slug` (string) - User's unique hub slug (e.g., "anika-sharma")
+
+**Example:**
+```
+GET /hub/anika-sharma
+```
+
+**Response (200):**
+```json
+{
+  "userName": "Anika Sharma",
+  "hubSlug": "anika-sharma",
+  "hubTitle": "My Links",
+  "hubDescription": "Welcome to my link hub",
+  "theme": "dark",
+  "accentColor": "#00ff00",
+  "visitorCountry": "US",
+  "visitorCountryName": "United States",
+  "visitorDevice": "desktop",
+  "visitorDeviceInfo": {
+    "browser": "Chrome",
+    "os": "Windows"
+  },
+  "totalLinks": 5,
+  "visibleLinks": 5,
+  "links": [
+    {
+      "_id": "507f1f77bcf86cd799439012",
+      "title": "My Portfolio",
+      "url": "https://portfolio.com",
+      "description": "Check out my work",
+      "clicks": 45,
+      "visits": 120,
+      "qrCode": "data:image/png;base64...",
+      "order": 0
+    }
+  ]
+}
+```
+
+**Error (404) - Invalid Slug:**
+```json
+{
+  "message": "Invalid hub URL",
+  "slug": "Invalid@Slug"
+}
+```
+
+**Error (404) - Not Found:**
+```json
+{
+  "message": "Hub not found",
+  "slug": "non-existent-slug"
+}
+```
+
+---
+
+### Get Public Links by User ID (Legacy)
+Retrieve a user's links using their user ID (maintained for backward compatibility).
 
 **Endpoint:** `GET /public/:userId`
 
@@ -362,6 +444,8 @@ Retrieve a user's links for public viewing (no authentication required).
   ]
 }
 ```
+
+**Note:** Use the `/hub/:slug` endpoint for cleaner, more shareable URLs.
 
 ---
 

@@ -16,6 +16,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { generateUniqueSlug } = require("../utils/slugGenerator");
 
 /**
  * User Signup Handler
@@ -53,14 +54,19 @@ exports.signup = async (req, res) => {
     // Hash password using bcryptjs (10 salt rounds) for security
     const hashed = await bcrypt.hash(password, 10);
     
+    // Generate unique slug from user's name for public hub URL
+    const hubSlug = await generateUniqueSlug(name);
+    
     // Create new user document
-    const user = new User({ name, email, password: hashed });
+    const user = new User({ name, email, password: hashed, hubSlug });
     await user.save();
 
     res.status(201).json({ 
       message: "Signup successful", 
       userId: user._id,
-      email: user.email 
+      email: user.email,
+      hubSlug: user.hubSlug,
+      hubUrl: `/hub/${user.hubSlug}`  // Provide the public hub URL
     });
   } catch (err) {
     // Log error for debugging
