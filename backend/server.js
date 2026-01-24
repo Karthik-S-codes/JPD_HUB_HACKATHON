@@ -23,7 +23,19 @@ const linkRoutes = require("./routes/linkRoutes");
 const userRoutes = require("./routes/userRoutes");
 
 const app = express();
-app.use(cors());
+
+// CORS configuration for frontend
+const corsOptions = {
+  origin: [
+    "https://smart-links-eta.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000"
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 connectDB();
