@@ -40,7 +40,7 @@
 
 ## 🔄 Data Flow Diagram
 
-### User Signup Flow
+### User Signup Flow (with Smart URL Generation) ✅ NEW!
 ```
 User Signup Form
         │
@@ -57,19 +57,22 @@ Validate Input (Backend)
 Hash Password (bcryptjs)
         │
         ▼
-Create User in DB
+Generate Unique Slug from Name ✅
+        │
+        ▼
+Create User in DB (with hubSlug)
         │
         ▼
 Generate JWT Token
         │
         ▼
-Return Token to Frontend
+Return Token + hubSlug to Frontend ✅
         │
         ▼
 Store Token (localStorage)
         │
         ▼
-Redirect to Dashboard
+Redirect to Dashboard (show slug URL) ✅
 ```
 
 ### Create Link Flow
@@ -173,18 +176,21 @@ backend/
 │   └── Analytics.js         # Click tracking & device detection
 │
 ├── controllers/               # Business Logic
-│   ├── authController.js    # Signup/Login logic, JWT generation
-│   └── linkController.js    # CRUD, QR generation, Analytics aggregation
+│   ├── authController.js    # Signup/Login logic, JWT generation, slug generation ✅
+│   └── linkController.js    # CRUD, QR generation, Analytics aggregation, slug-based access ✅
 │
 ├── routes/                    # API Endpoints
 │   ├── authRoutes.js        # /signup, /login
-│   └── linkRoutes.js        # /link, /links, /analytics, /public, /click
+│   └── linkRoutes.js        # /link, /links, /analytics, /public, /click, /hub/:slug ✅
 │
 ├── middleware/                # Request Processing
 │   └── auth.js              # JWT verification & user extraction
 │
 ├── config/                    # Configuration
 │   └── db.js                # MongoDB connection setup
+│
+├── utils/                     # Utility Functions
+│   └── slugGenerator.js     # Smart URL slug generation ✅
 │
 ├── app.js                     # Express setup (middleware, routes)
 ├── server.js                  # Entry point (server startup)
@@ -223,6 +229,7 @@ frontend/
   name: String,                     // User's name
   email: String (unique),           // Email address
   password: String (hashed),        // bcryptjs hash
+  hubSlug: String (unique, indexed),// Smart URL slug ✅ NEW!
   hubTitle: String,                 // "My Links"
   hubDescription: String,           // User-defined description
   theme: String,                    // "dark" or "light"
@@ -230,6 +237,17 @@ frontend/
   totalVisits: Number,              // Hub visit counter
   createdAt: Date,
   updatedAt: Date
+}
+
+// Example:
+{
+  _id: ObjectId,
+  name: "Anika Sharma",
+  email: "anika@example.com",
+  password: "$2b$10$...",
+  hubSlug: "anika-sharma",         // ✅ Auto-generated from name
+  hubTitle: "Anika's Links",
+  // ...
 }
 ```
 
@@ -274,7 +292,8 @@ frontend/
 ### Index Strategy
 ```javascript
 // For fast queries:
-User.createIndex({ email: 1 })           // Email lookup
+User.createIndex({ email: 1 })            // Email lookup
+User.createIndex({ hubSlug: 1 })          // Slug-based access ✅ NEW!
 Link.createIndex({ userId: 1, order: 1 }) // User's links sorted
 Analytics.createIndex({ linkId: 1 })      // Link analytics aggregation
 ```
@@ -388,8 +407,13 @@ App.jsx
 │       │   ├── TopPerformers (table)
 │       │   └── PerformanceTable (all links)
 │       │
-│       └── Route "/public/:id" → Public.jsx
-│           ├── UserInfo (avatar, name)
+│       ├── Route "/public/:id" → Public.jsx ✅ Legacy
+│       │   ├── UserInfo (avatar, name)
+│       │   └── LinksList (clickable links)
+│       │
+│       └── Route "/hub/:id" → Public.jsx ✅ NEW!
+│           ├── Smart slug/ID detection
+│           ├── UserInfo (avatar, name, slug)
 │           └── LinksList (clickable links)
 ```
 
@@ -622,6 +646,69 @@ Database Metrics:
 
 ---
 
-**Architecture Version**: 1.0  
-**Last Updated**: January 2024  
-**Status**: Production Ready ✅
+## 🔗 Smart URL Generation Architecture ✅ NEW!
+
+### Slug Generation Pipeline
+```
+User Name Input
+    │
+    ▼
+Convert to lowercase
+    │
+    ▼
+Remove special characters
+    │
+    ▼
+Replace spaces with hyphens
+    │
+    ▼
+Deduplicate consecutive hyphens
+    │
+    ▼
+Validate format: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+    │
+    ▼
+Check database for collision
+    │
+    ▼
+If exists: append -1, -2, etc.
+    │
+    ▼
+Return unique slug
+```
+
+### Dual-Route Public Access
+```
+Old Route (Legacy - Still Supported):
+GET /api/links/public/:userId
+    └── Returns hub data (compatible mode)
+
+New Route (Recommended):
+GET /api/links/hub/:slug ✅
+    └── Returns hub data + slug metadata
+
+Frontend Smart Detection:
+    ├── Checks if URL contains hyphen: "anika-sharma"
+    ├── Or matches pattern: /^[a-z0-9-]+$/
+    └── Routes to correct endpoint automatically
+```
+
+### Slug Examples
+```
+Input Name          →  Generated Slug
+─────────────────────────────────────
+Anika Sharma        →  anika-sharma
+John Doe            →  john-doe
+John Doe (2nd)      →  john-doe-1
+Dr. Rajesh Kumar    →  dr-rajesh-kumar
+John's Hub!         →  johns-hub
+Anika Śhármà        →  anik-shrm
+User_Name#123       →  user-name-123
+```
+
+---
+
+**Architecture Version**: 2.0  
+**Last Updated**: January 25, 2026  
+**Status**: Production Ready ✅  
+**Latest Feature**: Smart URL Generation (v1.0)
