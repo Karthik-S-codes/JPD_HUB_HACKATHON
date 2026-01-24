@@ -3,7 +3,6 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
-// Import rate limiting middleware for scalability
 const {
   publicLimiter,
   authLimiter,
@@ -12,10 +11,7 @@ const {
   stopCleanup
 } = require("./middleware/rateLimiter");
 
-// Import geolocation middleware
 const { geoLocationMiddleware } = require("./middleware/geoLocation");
-
-// Import device detection middleware
 const { deviceDetectionMiddleware } = require("./middleware/deviceDetection");
 
 const authRoutes = require("./routes/authRoutes");
@@ -24,30 +20,22 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-// CORS configuration for frontend (allow localhost + configured Vercel URL)
-// Normalize URLs by removing trailing slashes to avoid mismatches
+// ---- CORS setup (single, robust) ----
 const normalize = (url) => (url ? url.replace(/\/+$/, "") : url);
 
-const allowedOriginsRaw = [
-  process.env.FRONTEND_URL || "https://jpd-hub-hackathon.vercel.app",
+const allowedOrigins = new Set([
+  normalize(process.env.FRONTEND_URL || "https://jpd-hub-hackathon.vercel.app"),
   "http://localhost:5173",
   "http://localhost:3000"
-];
-const allowedOrigins = new Set(allowedOriginsRaw.map(normalize));
+]);
 const vercelPreviewRegex = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/;
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // same-origin or server-to-server
-
     const normalizedOrigin = normalize(origin);
-
-    const isAllowed =
-      allowedOrigins.has(normalizedOrigin) ||
-      vercelPreviewRegex.test(normalizedOrigin);
-
+    const isAllowed = allowedOrigins.has(normalizedOrigin) || vercelPreviewRegex.test(normalizedOrigin);
     if (isAllowed) return callback(null, true);
-
     console.warn(`CORS blocked origin: ${origin}`);
     return callback(new Error("Not allowed by CORS"));
   },
@@ -57,56 +45,38 @@ const corsOptions = {
   preflightContinue: false,
   optionsSuccessStatus: 204
 };
+
 app.use(cors(corsOptions));
-// Ensure CORS headers even if upstream handling differs
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin) {
-    const normalizedOrigin = normalize(origin);
-    if (allowedOrigins.has(normalizedOrigin) || vercelPreviewRegex.test(normalizedOrigin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    }
-  }
-  next();
-});
-// Explicitly enable preflight for all routes
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions)); // ensure preflight succeeds
+
 app.use(express.json());
 
+// ---- DB & middlewares ----
 connectDB();
-
-// Apply geolocation middleware to all requests
 app.use(geoLocationMiddleware);
-
-// Apply device detection middleware to all requests
 app.use(deviceDetectionMiddleware);
 
-// Apply rate limiting middleware
-// Auth endpoints (login, signup) - strict limits to prevent brute force
-app.use("/auth", authLimiter);
-
-// Public endpoints - moderate limits
+// ---- Rate limiters ----
 app.use("/public", publicLimiter);
-
-// Click tracking - high limits for tracking
 app.use("/click", clickLimiter);
-
-// User API endpoints - moderate limits
 app.use("/analytics", userLimiter);
 
+// ---- Routes ----
 app.use(authRoutes);
 app.use(linkRoutes);
 app.use("/user", userRoutes);
 
-const port = process.env.PORT || 5000;
-const server = app.listen(port, () =>
-  console.log("Server running on port " + port)
-);
+// Optional health route (handy for Render checks)
+app.get("/", (req, res) => {
+  res.json({ ok: true, service: "JPD Hub API", env: process.env.NODE_ENV || "production" });
+});
 
-// Graceful shutdown
+// ---- Server & shutdown ----
+const port = process.env.PORT || 5000;
+const server = app.listen(port, () => {
+  console.log("Server running on port " + port);
+});
+
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, shutting down gracefully...");
   stopCleanup();
