@@ -53,9 +53,12 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
+// Explicitly enable preflight for all routes
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 connectDB();
