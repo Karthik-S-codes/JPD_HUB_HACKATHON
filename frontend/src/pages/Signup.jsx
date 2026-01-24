@@ -18,13 +18,24 @@ export default function Signup() {
     try {
       setLoading(true);
       setError("");
-      await api.post("/signup", {
+      console.log("📤 Sending signup request to:", api.defaults.baseURL + "/signup");
+      console.log("📋 Data:", { name, email, password });
+      
+      const res = await api.post("/signup", {
         name,
         email,
         password
       });
+      
+      console.log("✅ Signup successful:", res.data);
       navigate("/");
     } catch (err) {
+      console.error("❌ Signup error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: err.config?.url
+      });
       setError(err.response?.data?.message || "Signup failed. Please try again.");
     } finally {
       setLoading(false);

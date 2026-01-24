@@ -20,28 +20,8 @@ const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
-// ---- CORS setup (explicit preflight handler) ----
-const allowedOrigins = [
-  "https://jpd-hub-hackathon.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:3000"
-];
-const vercelPreviewRegex = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/;
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin && (allowedOrigins.includes(origin) || vercelPreviewRegex.test(origin))) {
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header("Vary", "Origin");
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  }
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-  next();
-});
+// ---- CORS setup (simple for localhost development) ----
+app.use(cors());
 
 app.use(express.json());
 

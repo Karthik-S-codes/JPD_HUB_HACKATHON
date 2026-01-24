@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const PUBLIC_BASE = (import.meta.env.VITE_PUBLIC_BASE_URL || "https://jpd-hub-hackathon.vercel.app");
+  // Use env override if provided, otherwise default to current origin so local dev shows localhost link
+  const PUBLIC_BASE = import.meta.env.VITE_PUBLIC_BASE_URL || window.location.origin;
   const [links, setLinks] = useState([]);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");

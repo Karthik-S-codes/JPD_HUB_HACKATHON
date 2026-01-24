@@ -17,14 +17,25 @@ export default function Login() {
     try {
       setLoading(true);
       setError("");
+      console.log("📤 Sending login request to:", api.defaults.baseURL + "/login");
+      console.log("📋 Data:", { email, password });
+      
       const res = await api.post("/login", {
         email,
         password
       });
+      
+      console.log("✅ Login successful:", res.data);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userId", res.data.userId);
       navigate("/dashboard");
     } catch (err) {
+      console.error("❌ Login error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: err.config?.url
+      });
       setError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
