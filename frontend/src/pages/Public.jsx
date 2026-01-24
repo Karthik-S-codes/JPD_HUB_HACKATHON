@@ -10,6 +10,7 @@ export default function Public() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("User");
+  const [showQRModal, setShowQRModal] = useState(null);
 
   /**
    * Check if current time falls within the rule's time range
@@ -164,28 +165,39 @@ export default function Public() {
             </div>
           ) : (
             filteredLinks.map(link => (
-              <button
+              <div
                 key={link._id}
-                onClick={() => handleClick(link._id, link.url)}
-                className="w-full bg-slate-800 bg-opacity-50 backdrop-blur-lg p-6 rounded-xl border border-emerald-500 border-opacity-30 hover:border-emerald-500 hover:border-opacity-100 transition-all duration-300 group shadow-lg hover:shadow-emerald-500/50 text-left"
+                className="bg-slate-800 bg-opacity-50 backdrop-blur-lg p-6 rounded-xl border border-emerald-500 border-opacity-30 hover:border-emerald-500 hover:border-opacity-100 transition-all duration-300 shadow-lg hover:shadow-emerald-500/50"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
+                <div className="flex gap-6 items-center">
+                  {/* Link Info */}
+                  <button
+                    onClick={() => handleClick(link._id, link.url)}
+                    className="flex-1 text-left group"
+                  >
                     <h3 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-all">
                       {link.title}
                     </h3>
                     <p className="text-gray-400 text-sm mt-2 truncate hover:text-gray-300">
                       {link.url}
                     </p>
-                    <p className="text-emerald-400 text-xs mt-3 font-semibold">
-                      👁️ {link.clicks} views
-                    </p>
-                  </div>
-                  <div className="text-2xl ml-4 group-hover:scale-110 transition-transform">
-                    🔗
-                  </div>
+                  </button>
+                  
+                  {/* QR Code Icon */}
+                  {link.qrCode && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowQRModal(link);
+                      }}
+                      className="text-3xl hover:scale-110 transition-transform"
+                      title="View QR Code"
+                    >
+                      📱
+                    </button>
+                  )}
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -197,6 +209,26 @@ export default function Public() {
           </div>
         )}
       </div>
+
+      {/* QR Code Modal */}
+      {showQRModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-emerald-500">
+            <h3 className="text-2xl font-bold text-emerald-400 mb-4 text-center">{showQRModal.title}</h3>
+            <img 
+              src={showQRModal.qrCode} 
+              alt="QR Code" 
+              className="w-full mb-4 bg-white p-4 rounded" 
+            />
+            <button
+              onClick={() => setShowQRModal(null)}
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 rounded-lg transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
