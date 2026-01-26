@@ -192,6 +192,119 @@ exports.reorderLinks = async (req, res) => {
 };
 
 /**
+ * Evaluate if a link should be visible based on all its rules
+ * 
+ * @param {Object} link - Link document with rules array
+ * @param {Object} visitor - Visitor information (deviceType, country, etc.)
+ * @returns {boolean} - True if link passes all active rules
+ */
+const evaluateRules = (link, visitor) => {
+  // If no rules, show the link
+  if (!link.rules || link.rules.length === 0) {
+    return true;
+  }
+
+  // ALL rules must pass for the link to be visible
+  return link.rules.every(rule => {
+    // Skip inactive rules
+    if (!rule.active) return true;
+
+    switch (rule.type) {
+      case 'time':
+        return evaluateTimeRule(rule.condition);
+      
+      case 'device':
+        return evaluateDeviceRule(rule.condition, visitor.deviceType);
+      
+      case 'location':
+        return evaluateLocationRule(rule.condition, visitor.country);
+      
+      case 'performance':
+        return evaluatePerformanceRule(rule.condition, link.clicks);
+      
+      default:
+        return true; // Unknown rule types pass
+    }
+  });
+};
+
+/**
+ * Evaluate time-based rule
+ * @param {Object} condition - Rule condition with startTime, endTime, daysOfWeek
+ * @returns {boolean} - True if current time matches rule
+ */
+const evaluateTimeRule = (condition) => {
+  const now = new Date();
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const currentDay = dayNames[now.getDay()];
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  // Check if today is in the allowed days
+  if (!condition.daysOfWeek || !condition.daysOfWeek.includes(currentDay)) {
+    return false;
+  }
+
+  // Parse start and end times
+  const [startH, startM] = condition.startTime.split(':').map(Number);
+  const [endH, endM] = condition.endTime.split(':').map(Number);
+
+  // Convert to minutes for easier comparison
+  const currentMinutes = currentHour * 60 + currentMinute;
+  const startMinutes = startH * 60 + startM;
+  const endMinutes = endH * 60 + endM;
+
+  // Check if current time is within range
+  return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+};
+
+/**
+ * Evaluate device-based rule
+ * @param {Object} condition - Rule condition with allowedDevices
+ * @param {string} visitorDevice - Visitor's device type
+ * @returns {boolean} - True if visitor's device is allowed
+ */
+const evaluateDeviceRule = (condition, visitorDevice) => {
+  if (!condition.allowedDevices || condition.allowedDevices.length === 0) {
+    return true;
+  }
+
+  return condition.allowedDevices.includes(visitorDevice);
+};
+
+/**
+ * Evaluate location-based rule
+ * @param {Object} condition - Rule condition with allowedCountries
+ * @param {string} visitorCountry - Visitor's country code
+ * @returns {boolean} - True if visitor's country is allowed
+ */
+const evaluateLocationRule = (condition, visitorCountry) => {
+  if (!condition.allowedCountries || condition.allowedCountries.length === 0) {
+    return true;
+  }
+
+  // Check if GLOBAL is in allowed countries
+  if (condition.allowedCountries.includes('GLOBAL')) {
+    return true;
+  }
+
+  return condition.allowedCountries.includes(visitorCountry);
+};
+
+/**
+ * Evaluate performance-based rule
+ * @param {Object} condition - Rule condition with minClicks and maxClicks
+ * @param {number} currentClicks - Current click count for the link
+ * @returns {boolean} - True if clicks fall within allowed range
+ */
+const evaluatePerformanceRule = (condition, currentClicks) => {
+  const min = condition.minClicks !== undefined ? condition.minClicks : 0;
+  const max = condition.maxClicks !== undefined ? condition.maxClicks : Infinity;
+
+  return currentClicks >= min && currentClicks <= max;
+};
+
+/**
  * Filter links based on visitor's location
  * 
  * @param {Object} link - Link document
@@ -268,11 +381,23 @@ exports.getPublicLinks = async (req, res) => {
       .select("title url description clicks visits qrCode order rules allowedCountries allowedDevices")
       .sort({ order: 1 });
 
-    // Filter links based on visitor's country AND device
+    // Filter links based on all criteria: location, device, AND rules
     const visibleLinks = allLinks.filter(link => {
+      // Check location filter
       const countryMatch = isLinkVisibleByLocation(link, req.country);
+      if (!countryMatch) return false;
+
+      // Check device filter
       const deviceMatch = isLinkVisibleByDevice(link, req.deviceType);
-      return countryMatch && deviceMatch; // Both must pass
+      if (!deviceMatch) return false;
+
+      // Check rules (time-based, device-based, location-based, performance-based)
+      const visitor = {
+        country: req.country,
+        deviceType: req.deviceType
+      };
+      const rulesMatch = evaluateRules(link, visitor);
+      return rulesMatch;
     });
 
     console.log(`[Filters] Country: ${req.country} | Device: ${req.deviceType} | Total: ${allLinks.length} | Visible: ${visibleLinks.length}`);
@@ -503,11 +628,23 @@ exports.getPublicHubBySlug = async (req, res) => {
       .select("title url description clicks visits qrCode order rules allowedCountries allowedDevices")
       .sort({ order: 1 });
 
-    // Filter links based on visitor's country AND device
+    // Filter links based on all criteria: location, device, AND rules
     const visibleLinks = allLinks.filter(link => {
+      // Check location filter
       const countryMatch = isLinkVisibleByLocation(link, req.country);
+      if (!countryMatch) return false;
+
+      // Check device filter
       const deviceMatch = isLinkVisibleByDevice(link, req.deviceType);
-      return countryMatch && deviceMatch;
+      if (!deviceMatch) return false;
+
+      // Check rules (time-based, device-based, location-based, performance-based)
+      const visitor = {
+        country: req.country,
+        deviceType: req.deviceType
+      };
+      const rulesMatch = evaluateRules(link, visitor);
+      return rulesMatch;
     });
 
     console.log(`[Hub: ${slug}] Country: ${req.country} | Device: ${req.deviceType} | Total: ${allLinks.length} | Visible: ${visibleLinks.length}`);

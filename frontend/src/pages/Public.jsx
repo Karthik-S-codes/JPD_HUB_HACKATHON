@@ -155,18 +155,6 @@ export default function Public() {
         : "bg-gradient-to-br from-black via-black to-black"
     }`}>
       <div className="max-w-2xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate("/")}
-          className={`mb-6 sm:mb-8 font-semibold transition-all flex items-center gap-2 text-sm sm:text-base ${
-            theme === "light"
-              ? "text-gray-700 hover:text-gray-900"
-              : "text-emerald-400 hover:text-emerald-300"
-          }`}
-        >
-          ← Back
-        </button>
-
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12">
           <div 

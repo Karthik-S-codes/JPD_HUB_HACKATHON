@@ -23,6 +23,13 @@ export default function Dashboard() {
   const [ruleStartTime, setRuleStartTime] = useState("09:00");
   const [ruleEndTime, setRuleEndTime] = useState("17:00");
   const [selectedDays, setSelectedDays] = useState(["Mon", "Tue", "Wed", "Thu", "Fri"]);
+  // Device-based rule states
+  const [selectedDevices, setSelectedDevices] = useState([]);
+  // Location-based rule states
+  const [selectedCountries, setSelectedCountries] = useState([]);
+  // Performance-based rule states
+  const [minClicks, setMinClicks] = useState(0);
+  const [maxClicks, setMaxClicks] = useState(100);
   // Theme states
   const [theme, setTheme] = useState("dark");
   const [accentColor, setAccentColor] = useState("#00ff00");
@@ -104,6 +111,10 @@ export default function Dashboard() {
       setRuleStartTime("09:00");
       setRuleEndTime("17:00");
       setSelectedDays(["Mon", "Tue", "Wed", "Thu", "Fri"]);
+      setSelectedDevices([]);
+      setSelectedCountries([]);
+      setMinClicks(0);
+      setMaxClicks(100);
       setAllowedCountries(["GLOBAL"]);
       
       fetchLinks(token);
@@ -152,6 +163,27 @@ export default function Dashboard() {
         startTime: ruleStartTime,
         endTime: ruleEndTime,
         daysOfWeek: selectedDays
+      };
+    } else if (ruleType === "device") {
+      if (selectedDevices.length === 0) {
+        setError("Please select at least one device type");
+        return;
+      }
+      condition = {
+        allowedDevices: selectedDevices
+      };
+    } else if (ruleType === "location") {
+      if (selectedCountries.length === 0) {
+        setError("Please select at least one country");
+        return;
+      }
+      condition = {
+        allowedCountries: selectedCountries
+      };
+    } else if (ruleType === "performance") {
+      condition = {
+        minClicks: minClicks,
+        maxClicks: maxClicks
       };
     }
     
@@ -644,6 +676,103 @@ export default function Dashboard() {
                       Selected: {selectedDays.length > 0 ? selectedDays.join(', ') : 'None'}
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Device-Based Rule Configuration */}
+              {ruleType === 'device' && (
+                <div className="space-y-4 bg-slate-900 p-4 rounded border border-slate-700">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Select Device Types</label>
+                  <div className="space-y-2">
+                    {['desktop', 'mobile', 'tablet'].map(device => (
+                      <label key={device} className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedDevices.includes(device)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedDevices([...selectedDevices, device]);
+                            } else {
+                              setSelectedDevices(selectedDevices.filter(d => d !== device));
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-slate-600 text-emerald-500 focus:ring-emerald-500"
+                        />
+                        <span className="text-gray-300">
+                          {device === 'desktop' && '💻 Desktop'}
+                          {device === 'mobile' && '📱 Mobile'}
+                          {device === 'tablet' && '📱 Tablet'}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Selected: {selectedDevices.length > 0 ? selectedDevices.join(', ') : 'None selected'}
+                  </p>
+                </div>
+              )}
+
+              {/* Location-Based Rule Configuration */}
+              {ruleType === 'location' && (
+                <div className="space-y-4 bg-slate-900 p-4 rounded border border-slate-700">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Select Countries</label>
+                  <div className="space-y-2">
+                    {['US', 'CA', 'GB', 'IN', 'AU', 'DE', 'FR', 'JP', 'BR', 'MX'].map(country => (
+                      <label key={country} className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedCountries.includes(country)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedCountries([...selectedCountries, country]);
+                            } else {
+                              setSelectedCountries(selectedCountries.filter(c => c !== country));
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-slate-600 text-emerald-500 focus:ring-emerald-500"
+                        />
+                        <span className="text-gray-300">{country}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Selected: {selectedCountries.length > 0 ? selectedCountries.join(', ') : 'None selected'}
+                  </p>
+                </div>
+              )}
+
+              {/* Performance-Based Rule Configuration */}
+              {ruleType === 'performance' && (
+                <div className="space-y-4 bg-slate-900 p-4 rounded border border-slate-700">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Minimum Clicks: {minClicks}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      step="10"
+                      value={minClicks}
+                      onChange={(e) => setMinClicks(parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Maximum Clicks: {maxClicks}</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      step="10"
+                      value={maxClicks}
+                      onChange={(e) => setMaxClicks(parseInt(e.target.value))}
+                      className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-2">
+                    Show link when clicks are between {minClicks} - {maxClicks}
+                  </p>
                 </div>
               )}
 
