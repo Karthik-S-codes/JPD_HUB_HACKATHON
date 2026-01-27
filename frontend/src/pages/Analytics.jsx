@@ -1,6 +1,8 @@
 import api from "../services/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function Analytics() {
   const [analytics, setAnalytics] = useState({
@@ -59,6 +61,54 @@ export default function Analytics() {
     }
   };
 
+  const exportAnalyticsPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const timestamp = new Date();
+
+      doc.setFontSize(16);
+      doc.text("Analytics Report", 14, 18);
+      doc.setFontSize(10);
+      doc.text(`Generated: ${timestamp.toLocaleString()}`, 14, 26);
+      doc.text(`Total Visits: ${analytics.totalVisits}`, 14, 32);
+      doc.text(`Total Clicks: ${analytics.totalClicks}`, 14, 38);
+
+      const tableData = analytics.allLinks.map((link, idx) => [
+        idx + 1,
+        link.title || "Untitled",
+        link.clicks || 0,
+        link.visits || 0,
+        link.visits > 0 ? `${((link.clicks / link.visits) * 100).toFixed(1)}%` : "0%"
+      ]);
+
+      if (tableData.length === 0) {
+        doc.text("No link performance data to export yet.", 14, 48);
+      } else {
+        autoTable(doc, {
+          startY: 48,
+          head: [["#", "Link", "Clicks", "Visits", "CTR"]],
+          body: tableData,
+          styles: { overflow: "linebreak", cellPadding: 3, fontSize: 9 },
+          headStyles: { fillColor: [16, 185, 129], textColor: 255 },
+          alternateRowStyles: { fillColor: [245, 245, 245] },
+          columnStyles: {
+            0: { cellWidth: 10 },
+            1: { cellWidth: Math.max(pageWidth - 70, 40) },
+            2: { cellWidth: 16, halign: "right" },
+            3: { cellWidth: 16, halign: "right" },
+            4: { cellWidth: 18, halign: "right" }
+          }
+        });
+      }
+
+      doc.save(`analytics_${Date.now()}.pdf`);
+    } catch (err) {
+      console.error("Failed to export analytics PDF", err);
+      alert("Failed to export analytics PDF");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-black">
@@ -80,13 +130,22 @@ export default function Analytics() {
           </button>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <h1 className="text-2xl sm:text-4xl font-bold text-emerald-400">Analytics Dashboard</h1>
-            <button
-              onClick={exportAnalyticsCSV}
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/50 text-sm sm:text-base"
-            >
-              <span>📊</span>
-              <span>Export CSV</span>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button
+                onClick={exportAnalyticsCSV}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/50 text-sm sm:text-base"
+              >
+                <span>📊</span>
+                <span>Export CSV</span>
+              </button>
+              <button
+                onClick={exportAnalyticsPDF}
+                className="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 border border-emerald-500/40 text-sm sm:text-base"
+              >
+                <span>📄</span>
+                <span>Export PDF</span>
+              </button>
+            </div>
           </div>
         </div>
 

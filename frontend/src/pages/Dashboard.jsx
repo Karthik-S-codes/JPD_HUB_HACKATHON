@@ -256,6 +256,28 @@ export default function Dashboard() {
     alert("Copied to clipboard!");
   };
 
+  const describeRule = (rule) => {
+    if (!rule) return "";
+    if (rule.type === "time") {
+      const days = rule.condition?.daysOfWeek?.length ? rule.condition.daysOfWeek.join("/") : "No days";
+      return `⏰ ${rule.condition?.startTime || "--:--"} - ${rule.condition?.endTime || "--:--"} (${days})`;
+    }
+    if (rule.type === "device") {
+      const devices = rule.condition?.allowedDevices?.join(", ") || "No devices";
+      return `📱 Devices: ${devices}`;
+    }
+    if (rule.type === "location") {
+      const countries = rule.condition?.allowedCountries?.join(", ") || "No countries";
+      return `🌍 Regions: ${countries}`;
+    }
+    if (rule.type === "performance") {
+      const min = rule.condition?.minClicks ?? 0;
+      const max = rule.condition?.maxClicks ?? "∞";
+      return `📈 Clicks between ${min} - ${max}`;
+    }
+    return "Rule";
+  };
+
   const cancelEdit = () => {
     setTitle("");
     setUrl("");
@@ -453,13 +475,8 @@ export default function Dashboard() {
                 <h3 className="text-sm font-semibold text-emerald-400 mb-3">Applied Rules ({rules.length})</h3>
                 <div className="space-y-2">
                   {rules.map((rule, idx) => (
-                    <div key={idx} className="flex justify-between items-center bg-slate-800 p-2 rounded">
-                      <span className="text-sm text-gray-300">
-                        {rule.type === 'time' && '⏰ Time-based Rule'}
-                        {rule.type === 'device' && '📱 Device-based Rule'}
-                        {rule.type === 'location' && '🌍 Location-based Rule'}
-                        {rule.type === 'performance' && '📈 Performance-based Rule'}
-                      </span>
+                    <div key={idx} className="flex justify-between items-center bg-slate-800 p-2 rounded gap-3">
+                      <span className="text-sm text-gray-300 break-words">{describeRule(rule)}</span>
                       <button
                         type="button"
                         onClick={() => removeRule(idx)}
@@ -549,7 +566,19 @@ export default function Dashboard() {
                         <p className="text-gray-400 text-xs mt-1 break-words">{link.description}</p>
                       )}
                       {link.rules && link.rules.length > 0 && (
-                        <p className="text-emerald-400 text-xs mt-1">⚙️ {link.rules.length} rules active</p>
+                        <div className="mt-2 space-y-1">
+                          <p className="text-emerald-400 text-xs">⚙️ {link.rules.length} rules active</p>
+                          <div className="flex flex-wrap gap-1">
+                            {link.rules.map((rule, idx) => (
+                              <span
+                                key={idx}
+                                className="text-[11px] sm:text-xs bg-slate-800 border border-slate-700 text-gray-200 px-2 py-1 rounded"
+                              >
+                                {describeRule(rule)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                       <p className="text-emerald-400 text-xs mt-2">👁️ {link.clicks} clicks</p>
                     </div>
