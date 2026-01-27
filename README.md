@@ -52,8 +52,10 @@ JPD HUB is a complete link management solution with intelligent device and locat
 - Top performing links identification
 - Device and location breakdown
 - **CSV Export** - Download analytics as CSV file
+- **PDF Export** - Download analytics as PDF with formatted tables
 - Beautiful analytics dashboard with statistics
 - Real-time visitor information
+- Mobile-responsive analytics cards
 
 ### 7. **QR Code Generation** ✅
 - Automatic QR code for each link
@@ -87,6 +89,22 @@ JPD HUB is a complete link management solution with intelligent device and locat
 - Clean MVC architecture
 - Input validation and error handling
 - Modular code structure
+
+### 12. **Advanced Rules Engine** ✅ NEW!
+- **Time-based Rules** - Show links on specific days/times
+- **Device-based Rules** - Display links to mobile/desktop/tablet only
+- **Location-based Rules** - Restrict links by country
+- **Performance-based Rules** - Show links based on click thresholds
+- Rule chaining (multiple rules per link)
+- Dashboard rule visualization with detailed descriptions
+- Responsive rule management UI
+
+### 13. **PDF Export for Analytics** ✅ NEW!
+- Export analytics data as PDF documents
+- Formatted tables with headers and styling
+- Responsive design for mobile and desktop
+- Automatic filename with timestamp
+- Includes summary statistics and link performance table
 
 ---
 
@@ -157,7 +175,7 @@ VITE_API_URL=http://localhost:5000
 
 ## 📊 Complete API Documentation
 
-Full API reference available in [API.md](./API.md) including:
+Full API reference available in [API_UPDATE_SUMMARY.md](./API_UPDATE_SUMMARY.md) including:
 
 - **Authentication Endpoints** - Sign up, login
 - **Link Management** - Create, read, update, delete links
@@ -216,7 +234,7 @@ IIT_Hack/
 │   └── package.json
 │
 ├── README.md                      (This file)
-├── API.md                         (Full API documentation)
+├── API_UPDATE_SUMMARY.md          (Full API documentation)
 └── package.json
 ```
 
@@ -353,6 +371,7 @@ Shows visitor distribution by:
 - **Styling**: Tailwind CSS
 - **HTTP Client**: Axios
 - **Routing**: React Router
+- **PDF Generation**: jsPDF + jsPDF-AutoTable
 
 ---
 
@@ -388,7 +407,17 @@ Shows visitor distribution by:
 - Click "Analytics" in navigation
 - See real-time statistics
 - Click 📊 Export CSV to download data
+- Click 📄 Export PDF to download formatted PDF report
 - Analyze device/location breakdown
+- Mobile-responsive analytics cards
+
+### 6. Advanced: Set Rules for Links
+- In Dashboard, edit a link
+- Click "⚙️ Add Rule" button
+- Choose rule type: Time, Device, Location, or Performance
+- Configure rule conditions (days, times, countries, devices, etc.)
+- See rule descriptions in form and on link cards
+- Rules control which visitors see each link
 
 ### 6. Filter Links (Advanced)
 - In Dashboard, edit a link
@@ -426,6 +455,23 @@ Shows visitor distribution by:
 1. Go to Analytics page
 2. Click 📊 Export CSV
 3. Verify file downloads with correct data
+
+### Test PDF Export
+1. Go to Analytics page
+2. Click 📄 Export PDF
+3. Verify PDF downloads and opens correctly
+4. Check on mobile and desktop browsers
+5. Verify table is properly formatted with headers and data
+
+### Test Rules Engine
+1. Go to Dashboard and edit a link
+2. Click "⚙️ Add Rule"
+3. Select a rule type (e.g., Time-based)
+4. Configure rule conditions (e.g., 9 AM - 5 PM on weekdays)
+5. Click "Add Rule"
+6. Verify rule appears in "Applied Rules" section with description
+7. Verify rule chip appears on the link card
+8. Edit the link again to see rule details in the form
 
 ---
 
@@ -472,7 +518,7 @@ netstat -ano | findstr :5000  # On Windows
 
 ## 📖 Additional Resources
 
-- **Full API Documentation**: [API.md](./API.md)
+- **Full API Documentation**: [API_UPDATE_SUMMARY.md](./API_UPDATE_SUMMARY.md)
 - **Smart URL Generation Guide**: [SMART_URL_GENERATION_GUIDE.md](./SMART_URL_GENERATION_GUIDE.md)
 - **Frontend Slug Integration**: [FRONTEND_SLUG_INTEGRATION.md](./FRONTEND_SLUG_INTEGRATION.md)
 - **Testing Slug Feature**: [TESTING_SLUG_FEATURE.md](./TESTING_SLUG_FEATURE.md)
@@ -518,10 +564,10 @@ This project is open source and available under the MIT License.
 For issues, questions, or suggestions:
 - Open an issue on GitHub
 - Contact: [Your Contact Info]
-- Documentation: [API.md](./API.md)
+- Documentation: [API_UPDATE_SUMMARY.md](./API_UPDATE_SUMMARY.md)
 
 ---
 
 **Project Status**: 99% Complete ✅
-**Last Updated**: January 24, 2026
-**Version**: 2.0.0
+**Last Updated**: January 27, 2026
+**Version**: 2.1.0
