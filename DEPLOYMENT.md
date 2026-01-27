@@ -3,8 +3,9 @@
 ## Prerequisites
 - Node.js 16+ installed
 - MongoDB Atlas account (free tier available)
-- Vercel or Netlify account (for frontend)
-- Heroku or Railway account (for backend)
+- Render account (backend)
+- Vercel account (frontend)
+- GitHub repository access
 
 ---
 
@@ -32,140 +33,46 @@ npm run dev
 
 ## 🚀 Production Deployment
 
-### Option 1: Deploy Backend to Railway
+### Current Production
+- Frontend: Vercel (e.g., https://your-frontend.vercel.app)
+- Backend: Render (e.g., https://your-backend.onrender.com)
+- Set `VITE_API_BASE_URL` in Vercel to the Render backend URL
+- Allow the Vercel domain in backend CORS settings
 
-1. **Create Railway Account**
-   - Go to https://railway.app
-   - Sign up with GitHub
-
-2. **Connect Your Repository**
-   - Click "Deploy from GitHub"
-   - Select your repository
-   - Select `backend` as root directory
-
-3. **Set Environment Variables**
+### Deploy Backend to Render
+1. Push the repository to GitHub and ensure the `backend` folder is present.
+2. In Render, create a new Web Service → connect the repo → set root to `backend`.
+3. Build command: `npm install` (auto-detected). Start command: `npm start`.
+4. Environment variables:
    ```
    MONGO_URI=your_mongodb_connection_string
    JWT_SECRET=your_secret_key
    PORT=5000
+   NODE_ENV=production
    ```
+5. Enable auto-deploy on push. Copy the Render service URL for the frontend.
 
-4. **Deploy**
-   - Railway will automatically deploy on each push
-   - Your backend URL will be provided
-
-### Option 2: Deploy Backend to Heroku
-
-1. **Install Heroku CLI**
-   ```bash
-   npm install -g heroku
-   heroku login
+### Deploy Frontend to Vercel
+1. Import the repo in Vercel and select the `frontend` directory.
+2. Framework preset: Vite. Build command: `npm run build`. Output directory: `dist`.
+3. Environment variables in Vercel:
    ```
-
-2. **Create Heroku App**
-   ```bash
-   cd backend
-   heroku create your-app-name
+   VITE_API_BASE_URL=https://your-backend.onrender.com
    ```
-
-3. **Set Environment Variables**
-   ```bash
-   heroku config:set MONGO_URI="your_mongodb_uri"
-   heroku config:set JWT_SECRET="your_secret"
-   heroku config:set PORT="5000"
-   ```
-
-4. **Deploy**
-   ```bash
-   git push heroku main
-   heroku logs --tail
-   ```
-
----
-
-## 🎨 Production Deployment: Frontend
-
-### Option 1: Deploy to Vercel (Recommended)
-
-1. **Install Vercel CLI**
-   ```bash
-   npm install -g vercel
-   ```
-
-2. **Deploy**
-   ```bash
-   cd frontend
-   vercel
-   ```
-
-3. **Update API Endpoint**
-   - Edit `frontend/src/services/api.js`
-   - Change `baseURL` to your production backend URL:
-   ```javascript
-   const API_BASE_URL = process.env.VITE_API_BASE_URL || 'https://your-backend.railway.app';
-   ```
-
-4. **Set Environment Variables in Vercel**
-   ```
-   VITE_API_BASE_URL=https://your-backend.railway.app
-   ```
-
-5. **Redeploy**
-   ```bash
-   vercel --prod
-   ```
-
-### Option 2: Deploy to Netlify
-
-1. **Build Frontend**
-   ```bash
-   cd frontend
-   npm run build
-   ```
-
-2. **Deploy with Netlify**
-   ```bash
-   npm install -g netlify-cli
-   netlify deploy --prod --dir=dist
-   ```
-
-3. **Set Environment Variables**
-   - Go to Netlify Dashboard → Site Settings → Build & Deploy → Environment
-   - Add `VITE_API_BASE_URL=https://your-backend-url.com`
+4. Deploy. Re-deploy after any backend URL change.
 
 ---
 
 ## 🗄️ MongoDB Setup (Atlas)
 
-1. **Create MongoDB Account**
-   - Go to https://www.mongodb.com/cloud/atlas
-   - Create free account
-
-2. **Create Cluster**
-   - Click "Create Deployment"
-   - Choose "Free" tier
-   - Select region close to you
-   - Create cluster
-
-3. **Create Database User**
-   - Go to "Database Access"
-   - Create user with password
-   - Note: username and password
-
-4. **Get Connection String**
-   - Go to "Databases" → Click "Connect"
-   - Choose "Drivers" option
-   - Copy connection string
-   - Replace `<username>`, `<password>`, and database name
+1. Create an Atlas account (free tier).
+2. Create a cluster in a nearby region.
+3. Create a database user and save credentials.
+4. Get the connection string from "Connect" → "Drivers" and replace placeholders:
    ```
    mongodb+srv://username:password@cluster.mongodb.net/databasename
    ```
-
-5. **Add IP Address**
-   - Go to "Network Access"
-   - Click "Add IP Address"
-   - Choose "Allow Access from Anywhere" for development
-   - (For production: add specific IPs)
+5. Add IP allowlist (allow all for dev; restrict for production).
 
 ---
 
@@ -179,9 +86,9 @@ PORT=5000
 NODE_ENV=production
 ```
 
-### Frontend (.env or .env.production)
+### Frontend (.env or Vercel project settings)
 ```
-VITE_API_BASE_URL=https://your-backend-url.com
+VITE_API_BASE_URL=https://your-backend.onrender.com
 ```
 
 ---
@@ -189,19 +96,19 @@ VITE_API_BASE_URL=https://your-backend-url.com
 ## ✅ Pre-Deployment Checklist
 
 ### Backend
-- [ ] All dependencies installed (`npm install`)
-- [ ] `.env` file created with all variables
+- [ ] Dependencies installed (`npm install`)
+- [ ] `.env` created with all variables
 - [ ] Database connection tested
-- [ ] All API endpoints tested locally
+- [ ] API endpoints tested locally
 - [ ] No console errors or warnings
 - [ ] QRCode package installed
 - [ ] Error handling in place
 
 ### Frontend
-- [ ] All dependencies installed (`npm install`)
+- [ ] Dependencies installed (`npm install`)
 - [ ] Build succeeds (`npm run build`)
 - [ ] No console errors or warnings
-- [ ] API endpoints updated to production backend
+- [ ] `VITE_API_BASE_URL` points to Render backend
 - [ ] All pages tested locally
 - [ ] Login/Signup works
 - [ ] Links can be created and deleted
@@ -213,9 +120,9 @@ VITE_API_BASE_URL=https://your-backend-url.com
 ## 🔒 Security Checklist
 
 ### Backend
-- [ ] JWT_SECRET is strong (32+ characters)
-- [ ] MONGO_URI is secure (no password in code)
-- [ ] CORS configured for production frontend only
+- [ ] `JWT_SECRET` is strong (32+ characters)
+- [ ] `MONGO_URI` is secure (no password in code)
+- [ ] CORS restricted to production frontend
 - [ ] Input validation on all endpoints
 - [ ] Password hashing with bcryptjs
 - [ ] No sensitive data in logs
@@ -224,8 +131,8 @@ VITE_API_BASE_URL=https://your-backend-url.com
 
 ### Frontend
 - [ ] No API keys exposed in code
-- [ ] Authentication token in httpOnly cookie (or secure storage)
-- [ ] XSS protection enabled
+- [ ] Authentication token stored securely
+- [ ] XSS protections enabled
 - [ ] CSRF tokens if needed
 - [ ] No hardcoded URLs in code
 - [ ] Environment variables for API endpoints
@@ -235,95 +142,73 @@ VITE_API_BASE_URL=https://your-backend-url.com
 ## 📊 Monitoring & Logging
 
 ### Backend Logs
-```bash
-# Heroku
-heroku logs --tail
-
-# Railway
-railway logs
-
-# Local
-npm run dev  # shows console logs
-```
+- Render: View logs in the Render dashboard (Events/Logs) or via `render logs` if using CLI.
+- Local: `npm run dev` shows console logs.
 
 ### Frontend Errors
-- Use Sentry or similar service for error tracking
-- Add to `package.json`:
-  ```bash
-  npm install @sentry/react @sentry/tracing
-  ```
+- Use Vercel dashboard logs or `vercel logs <project-name>`.
+- Optional: add Sentry for client-side error tracking.
 
 ### Database Monitoring
-- Use MongoDB Atlas Charts
-- Monitor query performance
-- Set up alerts for high usage
+- Use MongoDB Atlas metrics and alerts.
+- Watch query performance and connection counts.
 
 ---
 
 ## 🛠️ Troubleshooting Deployment
 
 ### Frontend shows blank page
-- Check browser console (F12)
-- Verify API endpoint is correct
-- Check CORS settings on backend
-- Clear browser cache
+- Check browser console (F12).
+- Verify `VITE_API_BASE_URL` matches the Render backend URL.
+- Redeploy after env changes.
 
 ### Backend returns 500 errors
-- Check environment variables are set
-- Verify MongoDB connection
-- Check server logs
-- Ensure all dependencies are installed
+- Confirm environment variables are set on Render.
+- Verify MongoDB connection string and network rules.
+- Check Render logs for stack traces.
 
 ### CORS errors
-- Backend: Update CORS configuration
-  ```javascript
-  app.use(cors({
-    origin: 'https://your-frontend-url.com',
-    credentials: true
-  }));
-  ```
+- Update backend CORS to allow the Vercel domain only.
 
 ### QR code not generating
-- Verify `qrcode` package is installed
-- Check backend logs for errors
-- Test QR endpoint separately
+- Ensure `qrcode` dependency installed on backend.
+- Check backend logs for errors.
 
 ### Analytics not tracking clicks
-- Verify Analytics model is created in MongoDB
-- Check click endpoint is being called
-- Verify frontend is sending correct data
+- Confirm Analytics model exists in MongoDB.
+- Check click endpoint calls and responses in the network tab.
 
 ---
 
 ## 📈 Scaling for Growth
 
 ### Database Optimization
-- Add indexes to frequently queried fields
-- Archive old analytics data
-- Implement data retention policy
+- Add indexes to frequently queried fields.
+- Archive old analytics data.
+- Implement data retention policy.
 
 ### Backend Optimization
-- Add caching layer (Redis)
-- Implement pagination for large datasets
-- Add database connection pooling
+- Add caching (Redis).
+- Implement pagination for large datasets.
+- Enable connection pooling.
 
 ### Frontend Optimization
-- Implement lazy loading
-- Compress images
-- Minify CSS and JavaScript
-- Enable HTTP/2
+- Enable code-splitting/lazy loading.
+- Compress assets.
+- Minify CSS and JavaScript.
+- Serve over HTTP/2.
 
 ### Infrastructure
-- Use CDN for static assets
-- Add load balancer for multiple backend instances
-- Implement auto-scaling based on traffic
+- Use CDN for static assets.
+- Add load balancer for multiple backend instances.
+- Configure auto-scaling based on traffic.
 
 ---
 
 ## 📞 Support & Maintenance
 
 ### Regular Tasks
-- [ ] Monitor server logs daily
+- [ ] Monitor Render logs daily
 - [ ] Check database size weekly
 - [ ] Review user analytics monthly
 - [ ] Update dependencies quarterly
@@ -351,14 +236,13 @@ mongorestore dump/
 
 ## 📚 Additional Resources
 
-- [Railway Docs](https://docs.railway.app)
-- [Heroku Docs](https://devcenter.heroku.com)
+- [Render Docs](https://render.com/docs)
 - [Vercel Docs](https://vercel.com/docs)
-- [MongoDB Atlas Docs](https://docs.atlas.mongodb.com)
+- [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/)
 - [Express.js Guide](https://expressjs.com)
 - [React Docs](https://react.dev)
 
 ---
 
-**Deployment Status**: Ready for Production ✅  
-**Last Updated**: January 2024
+**Deployment Status**: Live on Vercel (frontend) + Render (backend) ✅  
+**Last Updated**: January 2026

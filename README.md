@@ -530,17 +530,16 @@ netstat -ano | findstr :5000  # On Windows
 
 ## 🚀 Deployment
 
-Ready for production! Check deployment guides for:
-- Heroku (Backend)
-- Vercel (Frontend)
-- AWS, Azure, Google Cloud
-- Docker containerization
+Production is live using:
+- Frontend: Vercel (e.g.,https://smart-links-hub.vercel.app/)
+- Backend: Render (e.g., https://smart-link-hub-iy53.onrender.com)
 
-**Important for Smart URL Feature:**
-- Ensure MongoDB indexes are created for `hubSlug` field
-- Test both `/hub/:slug` and `/public/:userId` routes work in production
-- Update frontend `PUBLIC_BASE` environment variable to production domain
-- Run migration script for existing users: `node backend/utils/migrateUserSlugs.js`
+If you redeploy:
+- Set `VITE_API_BASE_URL` in Vercel to the Render backend URL
+- Confirm CORS on the backend allows the Vercel domain
+- Verify `/hub/:slug` and `/public/:userId` both resolve
+- Keep MongoDB indexes for `hubSlug` in place for smart URLs
+- Run `node backend/utils/migrateUserSlugs.js` if migrating older data
 
 ---
 
@@ -563,7 +562,7 @@ This project is open source and available under the MIT License.
 
 For issues, questions, or suggestions:
 - Open an issue on GitHub
-- Contact: [Your Contact Info]
+- Contact: [8867598441]
 - Documentation: [API_UPDATE_SUMMARY.md](./API_UPDATE_SUMMARY.md)
 
 ---
